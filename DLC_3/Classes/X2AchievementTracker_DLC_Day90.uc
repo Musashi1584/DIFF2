@@ -236,12 +236,12 @@ static function EventListenerReturn OnUnitDied(Object EventData, Object EventSou
 					AbilityContext = XComGameStateContext_Ability(GameState.GetContext());
 					if (AbilityContext == none || AbilityContext.InputContext.SourceObject.ObjectID != UnitState.ObjectID)
 					{
-					`log("Shen's Last Gift Achievement Awarded: Make 'Em Go Boom");
-					`ONLINEEVENTMGR.UnlockAchievement(AT_KillPrimedDerelictMEC);
+						`log("Shen's Last Gift Achievement Awarded: Make 'Em Go Boom");
+						`ONLINEEVENTMGR.UnlockAchievement(AT_KillPrimedDerelictMEC);
+					}	
 				}
 			}
 		}
-	}
 	}
 
 	return ELR_NoInterrupt;

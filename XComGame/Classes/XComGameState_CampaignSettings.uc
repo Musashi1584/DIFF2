@@ -31,6 +31,8 @@ var bool bSkipFirstTactical;// Starts the campaign by simulating combat in the f
 
 var string BizAnalyticsCampaignID;
 
+var bool TLEInstalled;
+
 // The new difficulty sliders:
 //
 //  0 - 20: Rookie
@@ -46,6 +48,12 @@ var privatewrite float GameLength;
 function SetStartTime(string InStartTime)
 {
 	StartTime = InStartTime;
+}
+
+// Hacky function for ladders so that we can update the game index when loading pre-existing start
+function HACK_ForceGameIndex( int NewGameIndex )
+{
+	GameIndex = NewGameIndex;
 }
 
 function SetDifficulty(int NewDifficulty, optional float NewTacticalDifficulty = -1, optional float NewStrategyDifficulty = -1, optional float NewGameLength = -1, optional bool IsPlayingGame = false, optional bool InitialDifficultyUpdate = false)
@@ -288,8 +296,8 @@ static function CreateCampaignSettings(
 	}
 	else
 	{
-	Settings.SecondWaveOptions = InSecondWaveOptions;
-}
+		Settings.SecondWaveOptions = InSecondWaveOptions;
+	}
 }
 
 static event int GetCampaignDifficultyFromSettings()

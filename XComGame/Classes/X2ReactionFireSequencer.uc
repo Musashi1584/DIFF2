@@ -310,7 +310,7 @@ function bool AttemptStartReactionFire(X2Action_ExitCover ExitCoverAction)
 		}		
 
 		if(ReactionFireInstances[Index].ExitCoverAction == ExitCoverAction &&
-		   !ReactionFireInstances[Index].bStarted)
+		  !ReactionFireInstances[Index].bStarted)
 		{
 			ShowReactionFireInstance(ExitCoverAction.AbilityContext);
 			return true;

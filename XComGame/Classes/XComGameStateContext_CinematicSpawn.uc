@@ -32,6 +32,7 @@ protected function ContextBuildVisualization()
 	local XComGameState_Unit SpawnedUnit;
 	local X2CinematicSpawnPoint SpawnPoint;
 	local Actor SpawnPointActor;
+	local X2Action_SetTimeDilation TimeDilationFixup;
 
 	if(!class'Actor'.static.FindActorByIdentifier(SpawnPointIdentifier, SpawnPointActor))
 	{
@@ -51,6 +52,9 @@ protected function ContextBuildVisualization()
 		ActionMetadata.StateObject_NewState = SpawnedUnit;
 		break;
 	}
+
+	TimeDilationFixup = X2Action_SetTimeDilation( class'X2Action_SetTimeDilation'.static.AddToVisualizationTree( ActionMetadata, self ) );
+	TimeDilationFixup.TimeDilation = 1.0f;
 
 	// camera pan over to see the unit spawn
 	CameraAction = X2Action_CameraLookAt(class'X2Action_CameraLookAt'.static.AddToVisualizationTree(ActionMetadata, self));

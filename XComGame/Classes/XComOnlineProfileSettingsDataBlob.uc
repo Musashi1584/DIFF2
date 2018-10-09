@@ -34,6 +34,31 @@ struct native CustomizationAlertInfo
 	var name DLCName;
 };
 
+struct native LadderProgress
+{
+	var int LadderIndex;
+	var int LadderHighScore;
+};
+
+struct native LadderMissionID
+{
+	var int LadderIndex;
+	var int MissionIndex;
+};
+
+struct native TLEHubStats
+{
+	var int SuccessfulLadders;
+	var array<LadderMissionID> LadderCompletions;
+
+	var int NumSkirmishes;
+	var int NumSkirmishVictories;
+
+	var int NumOfflineChallengeVictories;
+	var int OfflineChallengeHighScore;
+	var array<int> OfflineChallengeCompletion;
+};
+
 var MarketingPreset MarketingPresets;
 
 // Stores the player's selection for the part packs ( chance to see the various parts show up on generated soldiers )
@@ -59,7 +84,8 @@ var array<int>                          m_arrGamesSubmittedToMCP_Loss;
 var int                                 m_iPodGroup; // Deprecated
 
 //  single player games started
-var int  m_iGames;       
+var int  m_iGames;
+var int m_Ladders;	// number of ladders started
 
 // Settings
 var bool m_bMuteSoundFX;
@@ -91,11 +117,13 @@ var bool	m_bPlayerHasUncheckedBoxTutorialSetting;
 var bool	m_bPlayerHasUncheckedBoxXPackNarrativeSetting;
 var bool	m_bPlayerHasSeenNoAchievesInChallenge;
 var bool	m_bTargetPreviewAlwaysOn;
+var bool	m_bLadderNarrativesOn;
 var int		m_iMasterVolume;
 var int		m_iVoiceVolume;
 var int		m_iFXVolume;
 var int		m_iMusicVolume;
 var int		m_iGammaPercentage;
+var int		m_iSoundtrackChoice;
 var float	m_fGamma;
 var int		m_iLastUsedMPLoadoutId; // Multiple MP Squad Loadouts -ttalley
 var float	UnitMovementSpeed; //Adjusts how fast units move around - 1.0f, the default settings, does not alter the movement rate from what was authored.
@@ -124,6 +152,63 @@ var bool m_bXPackNarrative;
 var config bool bForceController;
 var config int ForceConsole;
 var EConsoleType ConsoleType;
+
+var array<LadderProgress> LadderScores;
+var TLEHubStats HubStats;
+
+function int GetLadderHighScore( int LadderIndex )
+{
+	local LadderProgress Score;
+
+	foreach LadderScores( Score )
+	{
+		if (Score.LadderIndex == LadderIndex)
+			return Score.LadderHighScore;
+	}
+
+	return -1;
+}
+
+function AddLadderHighScore( int LadderIndex, int NewScore )
+{
+	local int Idx;
+	local LadderProgress NewHighScore;
+
+	for (Idx = 0; Idx < LadderScores.Length; ++Idx)
+	{
+		if (LadderScores[Idx].LadderIndex != LadderIndex)
+			continue;
+
+		if (LadderScores[Idx].LadderHighScore < NewScore)
+			LadderScores[Idx].LadderHighScore = NewScore;
+
+		break;
+	}
+
+	if (Idx == LadderScores.Length)
+	{
+		NewHighScore.LadderIndex = LadderIndex;
+		NewHighScore.LadderHighScore = NewScore;
+
+		LadderScores.AddItem( NewHighScore );
+	}
+}
+
+function int GetHighestLadderScore( )
+{
+	local int HighScore;
+	local LadderProgress Score;
+
+	HighScore = 0;
+
+	foreach LadderScores( Score )
+	{
+		if (Score.LadderHighScore > HighScore)
+			HighScore = Score.LadderHighScore;
+	}
+
+	return HighScore;
+}
 
 event EConsoleType GetConsoleType()
 {
@@ -283,6 +368,8 @@ function Options_ResetToDefaults( bool bInShell )
 
 	m_arrNarrativeContentEnabled.Length = 0;
 	bEnableZipMode = class'XComOnlineProfileSettingsDataBlob'.default.bEnableZipMode;
+
+	LadderScores.Length = 0;
 }
 
 defaultproperties
@@ -301,7 +388,9 @@ defaultproperties
 	m_bAmbientVO=true
 	m_bTargetPreviewAlwaysOn=false
 	m_bPlayerHasSeenNoAchievesInChallenge=false
+	m_bLadderNarrativesOn = true
 
+	m_iSoundtrackChoice = -1
 	m_iMasterVolume = 80
 	m_iVoiceVolume = 80
 	m_iFXVolume = 80
@@ -328,4 +417,7 @@ defaultproperties
 	m_eControllerIconType = eControllerIconType_Mouse
 
 	m_bXPackNarrative = true;
+
+	// start off the ladders at something non-zero to save space for published ladders
+	m_Ladders = 9
 }

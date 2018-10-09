@@ -143,7 +143,8 @@ static function X2DataTemplate CreateXPad()
 	Template.Abilities.AddItem('Hack_Chest');
 	Template.Abilities.AddItem('Hack_Workstation');
 	Template.Abilities.AddItem('Hack_ObjectiveChest');
-		
+	Template.Abilities.AddItem('Hack_Scan');
+			
 	Template.GameArchetype = "WP_HackingKit.WP_HackingKit";
 
 	Template.StartingItem = true;
@@ -486,6 +487,7 @@ static function X2DataTemplate SKULLJACK()
 	Template.Abilities.AddItem('SKULLMINEAbility');
 
 	Template.SetUIStatMarkup(class'XLocalizedData'.default.TechBonusLabel, eStat_Hacking, class'X2AbilityToHitCalc_Hacking'.default.SKULLJACK_HACKING_BONUS, false, IsSkullminingResearched);
+	Template.SetUIStatMarkup(class'XLocalizedData'.default.TechBonusLabel, eStat_Hacking, class'X2AbilityToHitCalc_Hacking'.default.SKULLJACK_HACKING_BONUS, false, IsTacticalGameMode);
 
 	Template.CanBeBuilt = false;
 	Template.PointsToComplete = 0;
@@ -511,6 +513,12 @@ static function X2DataTemplate SKULLJACK()
 static function bool IsSkullminingResearched()
 {
 	return class'UIUtilities_Strategy'.static.GetXComHQ().IsTechResearched('Skullmining');
+}
+
+static function bool IsTacticalGameMode( )
+{
+	// can't use this function directly because it has an optional boolean parameter
+	return class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( );
 }
 
 static function SKULLJACKEquipped(XComGameState_Item ItemState, XComGameState_Unit UnitState, XComGameState NewGameState)

@@ -151,7 +151,7 @@ simulated function SelectFirstListItem()
 
 	if(PrevListItem == none)
 	{
-	PrevListItem = GetActiveListItem();
+		PrevListItem = GetActiveListItem();
 	}
 
 	if (PrevListItem != none)
@@ -168,27 +168,27 @@ simulated function SelectFirstListItem()
 	}
 	else
 	{
-	for (Index = 0; Index < ItemCount; Index++)
-	{
-		ListItem = UISquadSelect_ListItem(GetItem(Index));
-		if (ListItem != none && !ListItem.bDisabled && ListItem.HasUnit())
-		{
-			bFoundIndex = true;
-			break;
-		}
-	}
-
-	if (!bFoundIndex)
-	{
 		for (Index = 0; Index < ItemCount; Index++)
 		{
 			ListItem = UISquadSelect_ListItem(GetItem(Index));
-			if (ListItem != none && !ListItem.bDisabled)
+			if (ListItem != none && !ListItem.bDisabled && ListItem.HasUnit())
 			{
+				bFoundIndex = true;
 				break;
 			}
 		}
-	}
+
+		if (!bFoundIndex)
+		{
+			for (Index = 0; Index < ItemCount; Index++)
+			{
+				ListItem = UISquadSelect_ListItem(GetItem(Index));
+				if (ListItem != none && !ListItem.bDisabled)
+				{
+					break;
+				}
+			}
+		}
 	}
 	// bsg-jrebar (5/30/17): end
 

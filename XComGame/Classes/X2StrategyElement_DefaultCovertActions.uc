@@ -944,8 +944,8 @@ static function ChooseRivalChosenHomeContinentRegion(XComGameState NewGameState,
 		}
 		else
 		{
-		ActionState.LocationEntity = ContinentState.Regions[`SYNC_RAND_STATIC(ContinentState.Regions.Length)];
-	}
+			ActionState.LocationEntity = ContinentState.Regions[`SYNC_RAND_STATIC(ContinentState.Regions.Length)];
+		}
 	}
 	else
 	{

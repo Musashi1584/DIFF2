@@ -211,9 +211,12 @@ function UpdateEventModeMap()
 {
 	local int UpdateTurn, UpdateEvent, MaxTurns;
 
+	if (`ONLINEEVENTMGR.bIsLocalChallengeModeGame)
+		return;
+
 	MaxTurns = OnlineMgr.m_ChallengeModeEventMap.Length / ECME_MAX;
 	`log(`location @ `ShowVar(m_CurrentTurn) @ `ShowVar(m_LastTurnUpdated) @ `ShowVar(MaxTurns),,'XCom_Challenge');
-
+	
 	if (m_LastTurnUpdated > m_CurrentTurn)
 	{
 		// Countdown until m_CurrentTurn is > m_LastTurnUpdated by only 1

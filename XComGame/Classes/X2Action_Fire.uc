@@ -441,9 +441,9 @@ function CompleteAction()
 		NotifyTargetsAbilityApplied();
 	}
 
-	if(Unit.CurrentFireAction != self)
+	if(Unit.CurrentFireAction != self && Unit.CurrentFireAction != none)
 	{
-		`log("X2Action_Fire::CompleteAction(): Mismatched fire action. CurrentFireAction: " $ Unit.CurrentFireAction.SummaryString() $ ", self: " $ SummaryString);
+		`log("X2Action_Fire::CompleteAction(): Mismatched fire action. CurrentFireAction: " $ Unit.CurrentFireAction.SummaryString() $ ", self: " $ SummaryString());
 		`assert(false);
 	}
 	Unit.CurrentFireAction = none;

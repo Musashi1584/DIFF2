@@ -201,21 +201,21 @@ simulated function UpdateNavHelp()
 	m_NavHelp.ClearButtonHelp();
 	if (!`REPLAY.bInTutorial)
 	{
-	m_NavHelp.AddBackButton(BackButtonCallback);
+		m_NavHelp.AddBackButton(BackButtonCallback);
 
-	m_NavHelp.AddCenterHelp(m_RestartReplay, class'UIUtilities_Input'.const.ICON_RB_R1);
+		m_NavHelp.AddCenterHelp(m_RestartReplay, class'UIUtilities_Input'.const.ICON_RB_R1);
 
-	if (m_bPaused)
-	{
-		m_NavHelp.AddCenterHelp(m_PlayReplay, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
+		if (m_bPaused)
+		{
+			m_NavHelp.AddCenterHelp(m_PlayReplay, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
+		}
+		else
+		{
+			m_NavHelp.AddCenterHelp(m_PauseReplay, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
+		}
+
+		m_NavHelp.AddCenterHelp(m_FastForwardReplay, class'UIUtilities_Input'.const.ICON_X_SQUARE);
 	}
-	else
-	{
-		m_NavHelp.AddCenterHelp(m_PauseReplay, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
-	}
-
-	m_NavHelp.AddCenterHelp(m_FastForwardReplay, class'UIUtilities_Input'.const.ICON_X_SQUARE);
-}
 }
 
 simulated function BackButtonCallback()

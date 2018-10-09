@@ -51,6 +51,7 @@ function OnSpawnComplete(const out EffectAppliedData ApplyEffectParameters, Stat
 
 	// Make sure the mimic doesn't spawn with any action points this turn
 	MimicBeaconGameState.ActionPoints.Length = 0;
+	MimicBeaconGameState.SetUnitFloatValue('NewSpawnedUnit', 1, eCleanup_BeginTactical);
 
 	// UI update happens in quite a strange order when squad concealment is broken.
 	// The unit which threw the mimic beacon will be revealed, which should reveal the rest of the squad.

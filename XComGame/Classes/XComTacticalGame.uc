@@ -571,13 +571,15 @@ function string GetSavedGameDescription()
 {
 	local XComGameStateHistory History;
 	local XComGameState_BattleData BattleData;
+	local XComGameState_LadderProgress LadderData;
 	local X2MissionTemplate MissionTemplate;
 	local string Desc, GeoTimeDesc;
 	local int GeoHour, GeoMinute;
 	local TDateTime GeoTime;
 
 	History = `XCOMHISTORY;
-	BattleData = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));	
+	BattleData = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
+	LadderData = XComGameState_LadderProgress(History.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true));
 	
 	GeoTime = class'XComGameState_GeoscapeEntity'.static.GetCurrentTime();
 	GeoHour = class'X2StrategyGameRulesetDataStructures'.static.GetHour(GeoTime);
@@ -589,7 +591,26 @@ function string GetSavedGameDescription()
 		GeoTimeDesc = `ONLINEEVENTMGR.FormatTimeStampFor12HourClock(GeoTimeDesc);
 	}
 
-	if(BattleData.m_strDesc != "")
+	if(LadderData != none)
+	{
+		MissionTemplate = class'X2MissionTemplateManager'.static.GetMissionTemplateManager().FindMissionTemplate(BattleData.MapData.ActiveMission.MissionName);
+		Desc = MissionTemplate.DisplayName;
+		if (LadderData.LadderIndex < 10)
+		{
+			Desc $= "\n" $ LadderData.NarrativeLadderNames[LadderData.LadderIndex];
+		}
+		else
+		{
+			Desc $= "\n" $ LadderData.LadderName;
+		}
+	}
+	else if(BattleData.m_strDesc == "Skirmish Mode")
+	{
+		MissionTemplate = class'X2MissionTemplateManager'.static.GetMissionTemplateManager().FindMissionTemplate(BattleData.MapData.ActiveMission.MissionName);
+		Desc = MissionTemplate.DisplayName;
+		Desc $= "\n" $ BattleData.m_strOpName;
+	}
+	else if(BattleData.m_strDesc != "")
 	{
 		Desc = BattleData.m_strDesc;
 		Desc $= "\n" $ BattleData.m_strOpName;

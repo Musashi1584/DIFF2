@@ -125,6 +125,10 @@ var array<KismetDrawTextInfo> KismetTextInfo;
 // Utils
 //=============================================================================
 
+native final function LockMessages();
+native final function UnlockMessages();
+
+
 // Draw3DLine  - draw line in world space. 
 native final function Draw3DLine(vector Start, vector End, color LineColor);
 native final function Draw2DLine(int X1, int Y1, int X2, int Y2, color LineColor);
@@ -418,6 +422,8 @@ function DisplayConsoleMessages()
 	if ( ConsoleMessages.Length == 0 )
 		return;
 
+	LockMessages();
+
     for (Idx = 0; Idx < ConsoleMessages.Length; Idx++)
     {
 		if ( ConsoleMessages[Idx].Text == "" || ConsoleMessages[Idx].MessageLife < WorldInfo.TimeSeconds )
@@ -449,6 +455,8 @@ function DisplayConsoleMessages()
 		Canvas.DrawText( ConsoleMessages[Idx].Text, false );
 		YPos += YL;
     }
+
+	UnlockMessages();
 }
 
 /**
@@ -458,6 +466,9 @@ function AddConsoleMessage(string M, class<LocalMessage> InMessageClass, PlayerR
 {
 	local int Idx, MsgIdx;
 	MsgIdx = -1;
+
+	LockMessages();
+
 	// check for beep on message receipt
 	if( bMessageBeep && InMessageClass.default.bBeep )
 	{
@@ -506,6 +517,8 @@ function AddConsoleMessage(string M, class<LocalMessage> InMessageClass, PlayerR
 
     ConsoleMessages[MsgIdx].TextColor = InMessageClass.static.GetConsoleColor(PRI);
     ConsoleMessages[MsgIdx].PRI = PRI;
+
+	UnlockMessages();
 }
 
 //===============================================

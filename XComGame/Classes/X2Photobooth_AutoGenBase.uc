@@ -29,6 +29,8 @@ struct native AutoGenPhotoInfo
 
 var bool bDestroyPhotoboothPawnsOnCleanup;
 
+var bool bLadderMode;
+
 delegate OnAutoGenPhotoFinished(StateObjectReference UnitRef);
 cpptext
 {
@@ -44,6 +46,7 @@ function Init()
 	SettingsState = XComGameState_CampaignSettings(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_CampaignSettings'));
 	AutoGenSettings.CampaignID = SettingsState.GameIndex;
 	AutoGenSettings.bChallengeMode = false;
+	AutoGenSettings.bLadderMode = bLadderMode;
 
 	AutoGenSettings.BackgroundDisplayName = class'UIPhotoboothBase'.default.m_strEmptyOption;
 	AutoGenSettings.TextLayoutState = ePBTLS_Auto;
@@ -112,4 +115,5 @@ defaultproperties
 {
 	m_bTakePhotoRequested = false
 	bDestroyPhotoboothPawnsOnCleanup = true
+	bLadderMode = false
 }

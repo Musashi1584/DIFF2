@@ -507,6 +507,16 @@ enum EAchievementType
 	AT_CompleteMissionTiredSoldiers,	// Complete a mission with all tired soldiers and no casualties
 	AT_HighInfluenceAllFactions,		// Raise XCOM influence to high with all three Resistance Factions
 	AT_RescueCapturedSoldier,			// Rescue a soldier captured by the Chosen
+
+	// TLE - Tactical Legacy Edition Achievements
+	AT_GoldBlastFromThePast,			// Get a gold medal on narrative ladder 1
+	AT_GoldItCameFromTheSea,			// Get a gold medal on narrative ladder 2
+	AT_GoldAvengerAssemble,				// Get a gold medal on narrative ladder 3
+	AT_GoldLazarusProject,				// Get a gold medal on narrative ladder 4
+	AT_CompleteProceduralLadder,		// Complete a procedural ladder
+	AT_CompleteCustomSkirmish,			// Complete a skirmish mission
+	AT_CompleteLocalChallenge,			// Complete a local challenge
+	AT_CompleTLECampaign,				// Complete a single player campaign with TLE content
 };
 
 // STYLING 

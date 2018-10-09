@@ -60,8 +60,8 @@ function ModifyKismetGameState(out XComGameState GameState)
 
 				UnitAlreadyHasAbility = (Unit.FindAbility(TestAbilityTemplate.DataName).ObjectID > 0);
 
-			if( !UnitAlreadyHasAbility )
-			{
+				if (!UnitAlreadyHasAbility)
+				{
 					TacticalRules.InitAbilityForUnit(TestAbilityTemplate, Unit, GameState);
 				}
 			}

@@ -29,6 +29,7 @@ var bool bChangingLocation;
 simulated function OnInit()
 {
 	local XComChallengeModeManager ChallengeModeManager;
+	local XComGameState_LadderProgress LadderData;
 
 	m_kTacticalLocation = new class'X2Photobooth_TacticalLocationController';
 
@@ -45,6 +46,20 @@ simulated function OnInit()
 
 		DefaultSetupSettings.GeneratedText.AddItem(`PHOTOBOOTH.m_ChallengeModeStr);
 		DefaultSetupSettings.GeneratedText.AddItem(`PHOTOBOOTH.m_ChallengeModeScoreLabel @ string(ChallengeModeManager.GetTotalScore()));
+	}
+	else if (bLadderMode)
+	{
+		LadderData = XComGameState_LadderProgress( `XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress' ) );
+
+		DefaultSetupSettings.GeneratedText.AddItem(`PHOTOBOOTH.m_ChallengeModeScoreLabel @ string(LadderData.CumulativeScore));
+		if (LadderData.LadderIndex < 10)
+		{
+			DefaultSetupSettings.GeneratedText.AddItem(LadderData.NarrativeLadderNames[LadderData.LadderIndex]);
+		}
+		else
+		{
+			DefaultSetupSettings.GeneratedText.AddItem(LadderData.LadderName);
+		}
 	}
 	
 	BATTLE().SetFOW(false);
@@ -489,7 +504,7 @@ simulated function CloseScreen()
 
 		Movie.Pres.ScreenStack.Pop(self);
 
-		if (`ScreenStack.IsInStack(class'UIMissionSummary'))
+		if (`ScreenStack.IsInStack(class'UIMissionSummary') && `XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) == none)
 		{
 			UIMissionSummary(`ScreenStack.GetFirstInstanceOf(class'UIMissionSummary')).CloseScreenTakePhoto();
 		}

@@ -294,7 +294,9 @@ enum ChallengeModePointType
 	CMPT_AliveSoldiers,
 	CMPT_CiviliansSaved,
 	CMPT_TimeRemaining,
-	CMPT_TotalScore
+	CMPT_TotalScore,
+	CMPT_WoundedSoldier,
+	CMPT_DeadSoldier,
 };
 
 struct native ChallengeMissionScoring
@@ -425,6 +427,7 @@ struct native ChallengeModeData
 	var array<byte> StartData;
 	var ChallengeScoring ScoringSetup;
 };
+
 struct native LeaderboardScoreData
 {
 	var qword IntervalSeedID;

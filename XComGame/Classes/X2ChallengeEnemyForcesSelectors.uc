@@ -53,6 +53,24 @@ static function X2ChallengeEnemyForces CreateStandardScheduleSelector( )
 
 static function StandardScheduleSelector( X2ChallengeEnemyForces Selector, XComGameState_MissionSite MissionSite, XComGameState_BattleData BattleData, XComGameState StartState )
 {
+	local XComGameState_ChallengeData ChallengeData;
+
+	foreach StartState.IterateByClassType(class'XComGameState_ChallengeData', ChallengeData)
+	{
+		break;
+	}
+
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = '';
+		ChallengeData.DefaultFollowerListOverride = '';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = '';
+		BattleData.DefaultFollowerListOverride = '';
+	}
+
 	MissionSite.CacheSelectedMissionData( BattleData.GetForceLevel(), BattleData.GetAlertLevel() );
 }
 
@@ -82,11 +100,16 @@ static function PsionicSquadSelector( X2ChallengeEnemyForces Selector, XComGameS
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_PsionicLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_PsionicFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_PsionicLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_PsionicFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_PsionicLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_PsionicFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -115,11 +138,16 @@ static function MechanizedArmySelector( X2ChallengeEnemyForces Selector, XComGam
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_MechanizedArmyLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_MechanizedArmyFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_MechanizedArmyLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_MechanizedArmyFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_MechanizedArmyLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_MechanizedArmyFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -148,11 +176,16 @@ static function ChryssalidInfestationSelector( X2ChallengeEnemyForces Selector, 
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_ChryssalidInfestation';
-	ChallengeData.DefaultFollowerListOverride = 'CM_ChryssalidInfestation';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_ChryssalidInfestation';
+		ChallengeData.DefaultFollowerListOverride = 'CM_ChryssalidInfestation';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_ChryssalidInfestation';
+		BattleData.DefaultFollowerListOverride = 'CM_ChryssalidInfestation';
+	}
 }
 
 // -------------------------------------------------------
@@ -181,11 +214,16 @@ static function CodexInvasionSelector( X2ChallengeEnemyForces Selector, XComGame
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_CodexInvasion';
-	ChallengeData.DefaultFollowerListOverride = 'CM_CodexInvasion';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_CodexInvasion';
+		ChallengeData.DefaultFollowerListOverride = 'CM_CodexInvasion';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_CodexInvasion';
+		BattleData.DefaultFollowerListOverride = 'CM_CodexInvasion';
+	}
 }
 
 // -------------------------------------------------------
@@ -214,11 +252,16 @@ static function RiotControlSelector( X2ChallengeEnemyForces Selector, XComGameSt
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_RiotControlLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_RiotControlFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_RiotControlLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_RiotControlFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_RiotControlLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_RiotControlFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -247,11 +290,16 @@ static function MutonAssaultSelector( X2ChallengeEnemyForces Selector, XComGameS
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_MutonAssaultLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_MutonAssaultFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_MutonAssaultLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_MutonAssaultFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_MutonAssaultLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_MutonAssaultFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -280,11 +328,16 @@ static function PurgeSelector( X2ChallengeEnemyForces Selector, XComGameState_Mi
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_PurgeLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_PurgeFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_PurgeLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_PurgeFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_PurgeLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_PurgeFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -313,10 +366,14 @@ static function BrutalLeadersSelector( X2ChallengeEnemyForces Selector, XComGame
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_BrutalLeaders';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_BrutalLeaders';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_BrutalLeaders';
+	}
 }
 
 // -------------------------------------------------------
@@ -345,11 +402,16 @@ static function NightmaresSelector( X2ChallengeEnemyForces Selector, XComGameSta
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_NightmaresLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_NightmaresFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_NightmaresLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_NightmaresFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_NightmaresLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_NightmaresFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -378,11 +440,16 @@ static function BeautyDestructionSelector( X2ChallengeEnemyForces Selector, XCom
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_BeautyDestructionLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_BeautyDestructionFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_BeautyDestructionLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_BeautyDestructionFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_BeautyDestructionLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_BeautyDestructionFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -411,11 +478,16 @@ static function PuppeteersSelector( X2ChallengeEnemyForces Selector, XComGameSta
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_PuppeteersLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_PuppeteersFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_PuppeteersLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_PuppeteersFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_PuppeteersLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_PuppeteersFollowers';
+	}
 }
 
 // -------------------------------------------------------
@@ -444,11 +516,16 @@ static function MonstersSelector( X2ChallengeEnemyForces Selector, XComGameState
 		break;
 	}
 
-	if (ChallengeData == none) // we're in PerRunner mode. Use regular enemies.
-		return;
-
-	ChallengeData.DefaultLeaderListOverride = 'CM_MonstersLeaders';
-	ChallengeData.DefaultFollowerListOverride = 'CM_MonstersFollowers';
+	if (ChallengeData != none) // we're in PerRunner mode. Use regular enemies.
+	{
+		ChallengeData.DefaultLeaderListOverride = 'CM_MonstersLeaders';
+		ChallengeData.DefaultFollowerListOverride = 'CM_MonstersFollowers';
+	}
+	else
+	{
+		BattleData.DefaultLeaderListOverride = 'CM_MonstersLeaders';
+		BattleData.DefaultFollowerListOverride = 'CM_MonstersFollowers';
+	}
 }
 
 // This isn't being used, but I've left it in place for reference in case this is needed
@@ -535,7 +612,7 @@ static function RoboSquadSelector( X2ChallengeEnemyForces Selector, XComGameStat
 
 		MissionSite.SelectedMissionData.SelectedEncounters.AddItem( NewEncounter );
 	}
-}
+} 
 
 static function ScheduleBreakdown GetAScheduleBreakdownForMission( XComGameState_MissionSite MissionSite )
 {

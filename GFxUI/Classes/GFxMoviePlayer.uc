@@ -217,11 +217,11 @@ enum ASType
  */
 struct native ASValue
 {
-  var() ASType      Type;
-  var() bool        b;
-  var() float       n;
-  var() init string s;
-  
+	var() ASType      Type;
+	var() bool        b;
+	var() float       n;
+	var() init string s;
+
 	structcpptext
 	{
 		FASValue()

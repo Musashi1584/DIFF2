@@ -443,7 +443,7 @@ simulated function OnCommand( string cmd, string arg )
 		}
 		else
 		{
-		bWaitingForInput = true;
+			bWaitingForInput = true;
 		}
 		break;
 	case "UnlockReward":

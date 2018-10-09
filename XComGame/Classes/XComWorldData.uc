@@ -171,8 +171,9 @@ var transient XComDestructibleActor DefaultDestructibleActor;
 var transient int RebuildIndex;
 var transient bool bEnableRebuildTileData;
 var transient bool bSyncingVisualizer;  //Set to TRUE for the duration of of the SyncVisualizers call. Certain operations need to be aware of this state.
-var transient bool bBatchingTileUpdates;
-var transient private{private} bool bPokeVisibility;
+
+var transient int bBatchingTileUpdates;
+var transient private{private} int bPokeVisibility;
 
 var delegate<CanSeeLocationCallback> CurrentCanSeeLocationCallback;
 var object CurrentCanSeeLocationCallbackOwner;
@@ -467,7 +468,7 @@ cpptext
 		ePosturePeekRight
 	};
 
-	bool IsPokingVisibility( ) const { return bPokeVisibility; }
+	bool IsPokingVisibility( ) const { return bPokeVisibility != 0; }
 
 	void BuildTileData(const FTTile &Tile, const FVector& WorldMin);
 	void BuildSeedData();
@@ -1243,7 +1244,7 @@ defaultproperties
 	bCinematicMode = false
 	iDebugFloorTileUnitSize=1
 	DebugFOWViewer=-2
-	bBatchingTileUpdates=false
+	bBatchingTileUpdates=0
 
 	DefaultFractureActorPath = "FX_DestructionDefaults.ARC_FracActor"
 	DefaultDestructibleActorPath = "FX_DestructionDefaults.ARC_DestructibleActor"

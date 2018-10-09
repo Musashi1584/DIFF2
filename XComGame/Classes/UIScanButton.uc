@@ -301,7 +301,7 @@ simulated function OnCommand(string cmd, string arg)
 
 function int SetFactionTooltip(string tooltipHTML)
 {
-	local int TooltipID; 
+	local int TooltipID;
 	//Don't follow mouse if controller is active, preventing weird flickering on geoscape at over 30 fps. -bsteiner. TTP 17734. 7/10/2017
 	TooltipID = Movie.Pres.m_kTooltipMgr.AddNewTooltipTextBox(tooltipHTML, 15, 0, MCPath$".scanFactionButton", , false, , (!`ISCONTROLLERACTIVE), , , , , , 0.0 /*no delay*/);
 	Movie.Pres.m_kTooltipMgr.TextTooltip.SetUsePartialPath(TooltipID, true);

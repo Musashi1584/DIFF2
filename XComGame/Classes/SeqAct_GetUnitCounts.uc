@@ -138,14 +138,14 @@ function protected int FilterUnitList(out array<XComGameState_Unit> Units)
 					// If we are flagged to ignore stasis units
 					if (!bIgnoreStasisUnits || (bIgnoreStasisUnits && UnitState.AffectedByEffectNames.Find('Stasis') == INDEX_NONE))
 					{
-					// Last if we are flagged to ignore templar ghosts, then verify then this isn't a ghost
-					if(!bIgnoreGhostUnits || (bIgnoreGhostUnits && UnitState.GhostSourceUnit.ObjectID == 0) )
-					{
-						FilteredUnits.AddItem( UnitState );
+						// Last if we are flagged to ignore templar ghosts, then verify then this isn't a ghost
+						if (!bIgnoreGhostUnits || (bIgnoreGhostUnits && UnitState.GhostSourceUnit.ObjectID == 0))
+						{
+							FilteredUnits.AddItem(UnitState);
+						}
 					}
 				}
 			}
-		}
 		}
 
 		Units = FilteredUnits;

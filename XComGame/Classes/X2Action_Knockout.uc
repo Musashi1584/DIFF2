@@ -7,15 +7,17 @@ class X2Action_Knockout extends X2Action;
 //*************************************
 var XComUnitPawn                TargetPawn;
 var CustomAnimParams            Params;
+var bool						bPlayKnockoutAnim;
 //*************************************
 
 function Init()
 {
 	local XComGameStateHistory History;
 	local XComGameStateContext_Ability AbilityContext;
-	local XComGameState_Unit UnitState;
+	local XComGameState_Unit UnitState, TargetUnitState;
 	local XComGameState_BaseObject ObjectState;
 	local XGUnit Target;
+	local UnitValue LadderUnkillableUnitValue;
 
 	super.Init();
 	
@@ -29,6 +31,20 @@ function Init()
 	ObjectState = History.GetGameStateForObjectID(AbilityContext.InputContext.PrimaryTarget.ObjectID);
 	Target = XGUnit(ObjectState.GetVisualizer());
 	TargetPawn = Target.GetPawn();
+
+	// Check to see if the knockout anim should play
+	bPlayKnockoutAnim = false;
+	TargetUnitState = XComGameState_Unit(ObjectState);
+	if (TargetUnitState != none)
+	{
+		if (TargetUnitState.GetUnitValue('LadderUnkillable', LadderUnkillableUnitValue))
+		{
+			if (LadderUnkillableUnitValue.fValue != 0)
+			{
+				bPlayKnockoutAnim = true;
+			}
+		}
+	}
 }
 
 function bool IsTimedOut()
@@ -40,7 +56,8 @@ function bool IsTimedOut()
 simulated state Executing
 {
 Begin:
-	if (UnitPawn == TargetPawn) // we are knocking ourself out (in the tutorial, or when syncing visualizers)
+	// we are knocking ourself out (in the tutorial, or when syncing visualizers)
+	if ((UnitPawn == TargetPawn) && !bPlayKnockoutAnim)
 	{
 		// just immediately warp the guy to the death pose
 		if (TargetPawn.GetAnimTreeController().CanPlayAnimation('HL_CarryBodyLoop'))
@@ -64,8 +81,11 @@ Begin:
 		TargetPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
 		TargetPawn.GetAnimTreeController().SetAllowNewAnimations(false);
 
-		Params.AnimName = 'FF_Melee';
-		FinishAnim(UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params));
+		if (UnitPawn != TargetPawn)
+		{
+			Params.AnimName = 'FF_Melee';
+			FinishAnim(UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params));
+		}
 	}
 
 	CompleteAction();

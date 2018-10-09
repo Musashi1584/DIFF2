@@ -198,6 +198,10 @@ simulated function TravelToNextScreen()
 				ShuttleToChallengeMenu();
 				break;
 
+			case EOEMSTST_LadderMode:
+				ShuttleToLadderMode();
+				break;
+
 			case EOEMSTST_StartScreen:
 			case EOEMSTST_None:
 			default:
@@ -349,6 +353,30 @@ simulated private function ShuttleToChallengeMenu()
 
 	`CHALLENGEMODE_MGR.OpenChallengeModeUI();
 	if (`ONLINEEVENTMGR.GetShuttleToChallengeMenu())
+	{
+		`ONLINEEVENTMGR.ClearShuttleToScreen();
+	}
+}
+
+simulated private function ShuttleToLadderMode()
+{
+	`log(`location, true, 'XCom_Online');
+	ClearUIToHUD();
+
+	if (`XENGINE.bReviewFlagged)
+	{
+		UIFinalShellScreen();
+		UIFinalShell(ScreenStack.GetScreen(class'UIFinalShell')).Hide();
+	}
+	else
+	{
+		UIShellScreen();
+		UIShell(ScreenStack.GetScreen(class'UIShell')).Hide();
+	}
+
+	UITLEHub();
+	UITLELadderMode();
+	if (`ONLINEEVENTMGR.GetShuttleToLadderMenu())
 	{
 		`ONLINEEVENTMGR.ClearShuttleToScreen();
 	}
@@ -525,6 +553,26 @@ simulated function Init3DUIScreens()
 {
 	// Disabled this since it's just debug and not yet final, 9/10/2015 bsteiner
 	UIShellScreen3D();
+}
+
+simulated function UITLEHub()
+{
+	ScreenStack.Push(Spawn(class'UITLEHub', self));
+}
+
+simulated function UITLELadderMode()
+{
+	ScreenStack.Push(Spawn(class'UITLE_LadderModeMenu', self));
+}
+
+simulated function UITLEChallengeMode()
+{
+	ScreenStack.Push(Spawn(class'UITLE_ChallengeModeMenu', self));
+}
+
+simulated function UITLESkirmishMode()
+{
+	ScreenStack.Push(Spawn(class'UITLE_SkirmishModeMenu', self));
 }
 
 simulated function UIShellScreen() 

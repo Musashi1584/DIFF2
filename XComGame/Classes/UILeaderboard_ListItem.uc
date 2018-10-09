@@ -10,9 +10,17 @@ simulated function UILeaderboard_ListItem InitListItem(optional name InitName, o
 
 simulated function UpdateData(const out TLeaderboardEntry entry)
 {
+	local string strWins;
+	local string strLosses;
+	local string strDisconnects;
+
 	m_Entry = entry;
 
-	SetData(string(m_Entry.iRank), m_Entry.strPlayerName, string(m_Entry.iWins), string(m_Entry.iLosses), string(m_entry.iDisconnects));
+	strWins = m_Entry.iWins == -1 ? "--" : string(m_Entry.iWins);
+	strLosses = m_Entry.iLosses == -1 ? "--" : string(m_Entry.iLosses);
+	strDisconnects = m_Entry.iDisconnects == -1 ? "--" : string(m_Entry.iDisconnects);
+
+	SetData(string(m_Entry.iRank), m_Entry.strPlayerName, strWins, strLosses, strDisconnects);
 }
 
 function SetData(string rank,

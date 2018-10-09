@@ -89,6 +89,9 @@ function bool FilterByNonSpecialized(X2BodyPartTemplate Template)
 	local int Index;
 	local bool bDLCNameValid;
 
+	local XComOnlineProfileSettings ProfileSettings;
+	local int BronzeScore, HighScore;
+
 	bDLCNameValid = DLCNames.Length == 0 || Template.DLCName == '';
 	if(!bDLCNameValid)
 	{
@@ -100,6 +103,19 @@ function bool FilterByNonSpecialized(X2BodyPartTemplate Template)
 				bDLCNameValid = true;
 				break;
 			}
+		}
+	}
+
+	// TLE customization is still locked unless ladder 3 is completed to a BronzeMedal
+	if (bDLCNameValid && (Template.DLCName == 'TLE') && (Template.PartType == "Helmets") )
+	{
+		ProfileSettings = `XPROFILESETTINGS;
+		BronzeScore = class'XComGameState_LadderProgress'.static.GetLadderMedalThreshold( 3, 0 );
+		HighScore = ProfileSettings.Data.GetLadderHighScore( 3 );
+
+		if (BronzeScore > HighScore)
+		{
+			return false;
 		}
 	}
 	

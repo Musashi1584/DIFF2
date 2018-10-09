@@ -165,6 +165,7 @@ simulated function SwitchAnimation(AnimationState anim)
 	local XComWorldData World;	
 	local AnimationState PreviousState;
 	local AnimNodeSequence PreviousSequence;
+	local float HealthPercent;
 
 	if (CurrentAnimState == anim)
 		return;
@@ -194,6 +195,11 @@ simulated function SwitchAnimation(AnimationState anim)
 			else
 			{
 				AnimParams.AnimName = 'MV_RunFwd';
+				HealthPercent = float(Unit.GetUnitHP()) / Unit.GetUnitMaxHP();
+				if( HealthPercent <= 0.5f && UnitPawn.GetAnimTreeController().CanPlayAnimation('MV_RunFwdInjured') )
+				{
+					AnimParams.AnimName = 'MV_RunFwdInjured';
+				}
 
 				if(bUseRunRateOption)
 				{
@@ -221,7 +227,7 @@ simulated function SwitchAnimation(AnimationState anim)
 			UnitPawn.EnableRMA(true, false);
 			UnitPawn.EnableRMAInteractPhysics(false);
 
-			if( UnitPawn.GetAnimTreeController().IsPlayingCurrentAnimation('MV_RunFwdA') )
+			if( UnitPawn.GetAnimTreeController().IsPlayingCurrentAnimation('MV_RunFwd') )
 			{
 				AnimParams.AnimName = 'MV_RunFlinch';
 

@@ -1736,6 +1736,7 @@ protected function string GetAlienStat( name TemplateName, bool WasKilled )
 
 		case 'ChryssalidCocoonHuman':
 		case 'ChryssalidCocoon':
+		case 'NeonateChryssalid':
 		case 'Chryssalid':			return WasKilled ? "CHRYSSALIDS_KILLED" : "SOLDIERS_KILLED_BY_CHRYSSALIDS";
 			break;
 
@@ -1745,6 +1746,7 @@ protected function string GetAlienStat( name TemplateName, bool WasKilled )
 		case 'Faceless':			return WasKilled ? "FACELESS_KILLED" : "SOLDIERS_KILLED_BY_FACELESS";
 			break;
 
+		case 'PsiZombieCivilian':
 		case 'PsiZombieHuman':
 		case 'PsiZombie':			return WasKilled ? "ZOMBIES_KILLED" : "SOLDIERS_KILLED_BY_ZOMBIES";
 			break;
@@ -1998,6 +2000,10 @@ protected function PlayerKilledOther(XComGameState_Unit SourceUnit, XComGameStat
 				AddValue( "TOTAL_TEMPLAR_KILLS", 1, UnitRef );
 				break;
 
+			case 'LadderCentral':
+				AddValue( "TOTAL_LADDER_CENTRAL_KILLS", 1, UnitRef );
+				break;
+
 			default:
 				AddValue("TOTAL_UNKNOWN_SOLDIER_CLASS_KILLS", 1, UnitRef);
 				break;
@@ -2052,7 +2058,7 @@ protected function OtherKilledPlayer(XComGameState_Unit SourceUnit, XComGameStat
 	UnitRef.ObjectID = KilledUnit.ObjectID;
 
 	if (!KilledUnit.bMissionProvided) // mission provided unit don't count as a unit loss for the endgame analytics
-	AddValue("UNITS_LOST", 1);
+		AddValue("UNITS_LOST", 1);
 
 	TimeDiffHours = class'X2StrategyGameRulesetDataStructures'.static.DifferenceInHours( KilledUnit.m_KIADate, KilledUnit.m_RecruitDate );
 	AddValue("ACC_UNIT_SERVICE_LENGTH", TimeDiffHours, UnitRef );
@@ -2155,6 +2161,10 @@ protected function OtherKilledPlayer(XComGameState_Unit SourceUnit, XComGameStat
 
 			case 'Templar':
 				AddValue( "TEMPLARS_KILLED", 1, UnitRef );
+				break;
+
+			case 'LadderCentral':
+				AddValue( "LADDER_CENTRAL_KILLED", 1, UnitRef );
 				break;
 
 			default:
@@ -2408,6 +2418,42 @@ protected function HandleWeaponKill(XComGameState_Unit SourceUnit, XComGameState
 			AddValue("KILLS_WITH_XCOM_TURRET", 1, UnitRef);
 			break;
 
+		case 'TLE_AssaultRifle_CV':
+		case 'TLE_AssaultRifle_MG':
+		case 'TLE_AssaultRifle_BM':
+			AddValue("KILLS_WITH_LEGACY_RIFLE", 1, UnitRef);
+			break;
+
+		case 'TLE_Cannon_CV':
+		case 'TLE_Cannon_MG':
+		case 'TLE_Cannon_BM':
+			AddValue("KILLS_WITH_LEGACY_CANNON", 1, UnitRef);
+			break;
+
+		case 'TLE_Pistol_CV':
+		case 'TLE_Pistol_MG':
+		case 'TLE_Pistol_BM':
+			AddValue("KILLS_WITH_LEGACY_PISTOL", 1, UnitRef);
+			break;
+
+		case 'TLE_SniperRifle_CV':
+		case 'TLE_SniperRifle_MG':
+		case 'TLE_SniperRifle_BM':
+			AddValue("KILLS_WITH_LEGACY_SNIPERRIFLE", 1, UnitRef);
+			break;
+
+		case 'TLE_Shotgun_CV':
+		case 'TLE_Shotgun_MG':
+		case 'TLE_Shotgun_BM':
+			AddValue("KILLS_WITH_LEGACY_SHOTGUN", 1, UnitRef);
+			break;
+
+		case 'TLE_Sword_CV':
+		case 'TLE_Sword_MG':
+		case 'TLE_Sword_BM':
+			AddValue("KILLS_WITH_LEGACY_SWORD", 1, UnitRef);
+			break;
+
 		default:
 			if ((X2GrenadeTemplate( Item.GetMyTemplate( ) ) != none) || (X2GrenadeTemplate( Item.GetLoadedAmmoTemplate( Ability ) ) != none))
 			{
@@ -2435,6 +2481,25 @@ protected function HandleWeaponKill(XComGameState_Unit SourceUnit, XComGameState
 			}
 			break;
 	}
+}
+
+simulated function ChallengeScoreChange( XComGameState GameState )
+{
+	local XComGameState_ChallengeScore NewScore;
+	local XComGameState NewGameState;
+	local XComGameState_Analytics AnalyticsObject;
+
+	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState( "Analytics Challenge Score Bonus" );
+
+	AnalyticsObject = XComGameState_Analytics( NewGameState.ModifyStateObject( class'XComGameState_Analytics', self.ObjectID ) );
+
+	foreach GameState.IterateByClassType( class'XComGameState_ChallengeScore', NewScore )
+	{
+		if (NewScore.LadderBonus > 0)
+			AddValue( "TLE_LADDER_BONUS", NewScore.LadderBonus );
+	}
+
+	SubmitGameState( NewGameState, AnalyticsObject );
 }
 
 cpptext

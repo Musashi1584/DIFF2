@@ -22,10 +22,10 @@ event name CallMeetsCondition(XComGameState_BaseObject kTarget)
 	}
 	else
 	{
-	if (TargetUnitState.FindAvailableNeighborTile(NeighborTile))
-	{
-		RetCode = 'AA_Success';
-	}
+		if( TargetUnitState.FindAvailableNeighborTile(NeighborTile) )
+		{
+			RetCode = 'AA_Success';
+		}
 	}
 	
 	return RetCode;

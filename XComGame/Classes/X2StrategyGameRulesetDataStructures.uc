@@ -893,7 +893,7 @@ struct native CovertActionSlot
 /// <summary>
 /// Defines the display info for a single line in the objectives list
 /// </summary>
-struct ObjectiveDisplayInfo
+struct native ObjectiveDisplayInfo
 {
 	var int GroupID, TextPoolIndex, LineIndex;
 	var string MissionType;

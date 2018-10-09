@@ -83,6 +83,8 @@ function PhotoTaken(StateObjectReference UnitRef)
 
 	if (m_kOnPhotoTaken != none)
 		m_kOnPhotoTaken();
+	else
+		m_bTakePhotoRequested = false; // if theres no photo callback this flag never gets set to false and infinite photos get taken
 }
 
 function TakePhoto()

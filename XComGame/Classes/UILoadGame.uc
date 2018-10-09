@@ -141,12 +141,19 @@ simulated function OnReadSaveGameListStarted()
 
 simulated function OnReadSaveGameListComplete(bool bWasSuccessful)
 {
+	local XComCheatManager XComCheat;
+	local bool FilterLadders;
+
 	if( bWasSuccessful )
 		`ONLINEEVENTMGR.GetSaveGames(m_arrSaveGames);
 	else
 		m_arrSaveGames.Remove(0, m_arrSaveGames.Length);
 
-	if (FilterSaveGameList())
+	XComCheat = XComCheatManager(GetALocalPlayerController().CheatManager);
+	FilterLadders = (XComCheat != none) ? !XComCheat.LoadMenuLaddersAllowed : true;
+	//class'X2TacticalGameRuleset'.static.ReleaseScriptLog( "Filtering Ladders:" @ FilterLadders @ "with CheatMgr:" @ XComCheat );
+
+	if (FilterSaveGameList(m_arrSaveGames, m_bBlockingSavesFromOtherLanguages, FilterLadders ))
 	{
 		ShowSaveLanguageDialog();	
 	}
@@ -159,7 +166,7 @@ simulated function OnReadSaveGameListComplete(bool bWasSuccessful)
 	Movie.Stack.PopFirstInstanceOfClass(class'UIProgressDialogue', false);
 }
 
-simulated function bool FilterSaveGameList()
+simulated static function bool FilterSaveGameList( out array<OnlineSaveGame> SaveGames, bool bBlockingSavesFromOtherLanguages = true, bool SkipLadders = true )
 {
 	local XComOnlineEventMgr OnlineEventMgr;
 	local int SaveGameIndex;
@@ -171,15 +178,17 @@ simulated function bool FilterSaveGameList()
 
 	OnlineEventMgr = `ONLINEEVENTMGR;
 	CurrentLanguage = GetLanguage();
+
+	//class'X2TacticalGameRuleset'.static.ReleaseScriptLog( "Filtering SaveGame List: Languages" @ bBlockingSavesFromOtherLanguages @ "Ladders" @ SkipLadders );
 	
 	SaveGameIndex = 0;
-	while( SaveGameIndex < m_arrSaveGames.Length )
+	while( SaveGameIndex < SaveGames.Length )
 	{
 		RemoveSave = false;
-		SaveGameID = OnlineEventMgr.SaveNameToID(m_arrSaveGames[SaveGameIndex].Filename);
+		SaveGameID = OnlineEventMgr.SaveNameToID(SaveGames[SaveGameIndex].Filename);
 
 		// Filter out save games made in other languages
-		if( m_bBlockingSavesFromOtherLanguages )
+		if( bBlockingSavesFromOtherLanguages )
 		{
 			OnlineEventMgr.GetSaveSlotLanguage(SaveGameID, SaveLanguage);
 			if( CurrentLanguage != SaveLanguage )
@@ -188,9 +197,15 @@ simulated function bool FilterSaveGameList()
 				bDifferentLanguageDetected = true;
 			}
 		}
+		
+		if (SkipLadders)
+		{
+			if (SaveGames[SaveGameIndex].SaveGames[0].SaveGameHeader.bLadder)
+				RemoveSave = true;
+		}
 
 		if( RemoveSave )
-			m_arrSaveGames.Remove(SaveGameIndex, 1);
+			SaveGames.Remove(SaveGameIndex, 1);
 		else
 			SaveGameIndex++;
 	}

@@ -3239,8 +3239,6 @@ static function X2CharacterTemplate CreateTemplate_Faceless()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Barrier');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'X2NarrativeMoments.TACTICAL.AlienSitings.T_Central_AlienSightings_Faceless');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'X2NarrativeMoments.TACTICAL.AlienSitings.T_Tygan_AlienSightings_Faceless');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'X2NarrativeMoments.TACTICAL.AlienSitings.T_Shen_AlienSightings_Faceless');
 
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Alien;
 
@@ -3731,7 +3729,6 @@ static function X2CharacterTemplate CreateTemplate_Viper()
 	CharTemplate.MPPointValue = CharTemplate.XpKillscore * 10;
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'X2NarrativeMoments.TACTICAL.AlienSitings.T_Tygan_AlienSightings_Viper');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'X2NarrativeMoments.TACTICAL.AlienSitings.T_Central_AlienSightings_Viper');
 
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Alien;
 
@@ -3897,8 +3894,6 @@ static function X2CharacterTemplate CreateTemplate_TheLost(name LostName, name L
 	CharTemplate.Abilities.AddItem('LostHeadshotInit');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Seen_Lost');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Lost_Seen_A');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Lost_Seen_B');
 	
 	CharTemplate.MPPointValue = CharTemplate.XpKillscore * 10;
 
@@ -3922,7 +3917,6 @@ static function X2CharacterTemplate CreateTemplate_TheLostDasher(name LostName, 
 
 	CharTemplate.SightedNarrativeMoments.Length = 0;
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Dasher_A');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Dasher_B');
 
 	return CharTemplate;
 }
@@ -5633,7 +5627,6 @@ static function X2CharacterTemplate CreateTemplate_SpectreM1()
 	CharTemplate.ImmuneTypes.AddItem('Acid');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_TYG_T_First_Seen_Spectre_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_TYG_T_First_Spectre_Sighted');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Alien;
@@ -5846,7 +5839,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPurifierM1()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Barrier');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Seen_Adv_Purifier_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Purifier');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;
@@ -5919,7 +5911,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPurifierM2()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Barrier');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Seen_Adv_Purifier_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Purifier');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;
@@ -5992,7 +5983,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPurifierM3()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Barrier');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Seen_Adv_Purifier_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Purifier');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;
@@ -6068,7 +6058,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPriestM1()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Counterattack');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_TYG_T_First_Seen_Adv_Priest_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Priest');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;
@@ -6144,7 +6133,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPriestM2()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Counterattack');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_TYG_T_First_Seen_Adv_Priest_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Priest');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;
@@ -6220,7 +6208,6 @@ static function X2CharacterTemplate CreateTemplate_AdvPriestM3()
 	CharTemplate.Abilities.AddItem('DarkEventAbility_Counterattack');
 
 	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_TYG_T_First_Seen_Adv_Priest_M1');
-	CharTemplate.SightedNarrativeMoments.AddItem(XComNarrativeMoment'XPACK_NarrativeMoments.X2_XP_CEN_T_First_Priest');
 
 	CharTemplate.strHackIconImage = "UILibrary_Common.TargetIcons.Hack_captain_icon";
 	CharTemplate.strTargetIconImage = class'UIUtilities_Image'.const.TargetIcon_Advent;

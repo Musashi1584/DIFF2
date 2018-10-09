@@ -935,6 +935,8 @@ private function ChooseObjectivePCP()
 		}
 	}
 
+	BattleDataState.MapData.ObjectiveParcelIndex = -1;
+
 	// Spawn a parcel at this location
 	ObjectiveParcel = World.Spawn(class'XComParcel', World,, ObjectivePCP.Location, ObjectivePCP.Rotation);
 	arrParcels.AddItem(ObjectiveParcel);
@@ -949,7 +951,8 @@ private function ChooseObjectivePCP()
 	foreach class'WorldInfo'.static.GetWorldInfo().AllActors(class'XComPlayerController', PlayerController)
 	{
 		break;
-	}		
+	}
+
 	PlayerController.UpdateUIBriefingScreen(ObjectivePCPDefiniton.MapName);
 
 	ObjectiveParcel.ParcelDef.MapName = ObjectivePCPDefiniton.MapName;
@@ -1205,9 +1208,11 @@ function ChooseSoldierSpawn()
 {
 	local XComGroupSpawn kSpawn;
 	local array<XComGroupSpawn> arrSpawns;
-	local int SpawnIndex;
+	local int SpawnIndex, SpawnSize;
 	local float SpawnDistanceSq;
 	local float FurthestSpawnDistanceSq;
+	local TTile SpawnTile;
+	local XComWorldData WorldData;
 
 	// cache off the objective location for use in determining spawn ordering
 	`TACTICALMISSIONMGR.GetLineOfPlayEndpoint(BattleDataState.MapData.ObjectiveLocation);
@@ -1231,9 +1236,29 @@ function ChooseSoldierSpawn()
 	// safety catch in case no spawn could be found, take the furthest spawn from the objective
 	if(SoldierSpawn == none)
 	{
+		WorldData = `XWORLD;
+		SpawnSize = BattleDataState.MapData.ActiveMission.SquadSpawnSizeOverride == 0 ? 2 : BattleDataState.MapData.ActiveMission.SquadSpawnSizeOverride;
+
 		ParcelGenerationAssert(false, "No Soldier Spawn found that obeys spawn rules, defaulting to furthest.");
 		foreach `XWORLDINFO.AllActors(class'XComGroupSpawn', kSpawn)
 		{
+			// Skip spawn points not within the bounds of the world
+			SpawnTile = WorldData.GetTileCoordinatesFromPosition( kSpawn.Location );
+			if (WorldData.IsTileOutOfRange( SpawnTile ))
+				continue;
+
+			// skip spawn points too close to the max edge of the world
+			SpawnTile.X += SpawnSize;
+			SpawnTile.Y += SpawnSize;
+			if (WorldData.IsTileOutOfRange( SpawnTile ))
+				continue;
+
+			// skip spawn points too close to the min edge of the world
+			SpawnTile.X -= SpawnSize * 2;
+			SpawnTile.Y -= SpawnSize * 2;
+			if (WorldData.IsTileOutOfRange( SpawnTile ))
+				continue;
+
 			SpawnDistanceSq = VSizeSq2D(BattleDataState.MapData.ObjectiveLocation - kSpawn.Location);
 			if(SpawnDistanceSq > FurthestSpawnDistanceSq)
 			{

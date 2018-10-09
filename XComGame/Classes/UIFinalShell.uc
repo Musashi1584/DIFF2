@@ -19,12 +19,14 @@ var localized string            m_sCharacterPool;
 var localized string            m_sChallengeMode;
 
 var localized string            m_strExitToPSNStoreTitle;
-var localized string            m_strExitToPSNStoreBody;
+var localized string            m_strExitToPSNStoreBody;           
+var localized string            m_strNoTLEEntitlementTooltip;
 
 var UIButton                    m_my2KButton;
 var bool                        m_bNewChallenge;
 var bool                        m_bChallengeRequestInFlight;
 var bool                        m_bLaunchChallengeAfterRequest;
+var bool						m_bTLELadderSave;
 
 var int m_iSP;
 var int m_iMP;
@@ -33,6 +35,19 @@ var int m_iOptions;
 var int m_iExit;
 
 var bool bIsFullScreenViewport;
+
+var array<OnlineSaveGame> m_arrSaveGames;
+
+struct native LadderSaveData
+{
+	var string Filename;
+	var int SaveID;
+
+	var int LadderIndex;
+	var int MissionIndex;
+};
+
+var array<LadderSaveData> m_LadderSaveData;
 
 //--------------------------------------------------------------------------------------- 
 // Cached References
@@ -43,8 +58,10 @@ var X2FiraxisLiveClient FiraxisLiveClient;
 // Flash is ready
 simulated function OnInit()
 {
+	local XComOnlineEventMgr OnlineEventMgr;
+
 	super.OnInit();
-	
+
 	ImportBaseGameCharacterPool();
 
 	m_my2KButton = Spawn(class'UIButton', self);
@@ -52,6 +69,11 @@ simulated function OnInit()
 	m_my2KButton.InitButton('My2KButton', ,  ProcessMy2KButtonClick);
 	m_my2KButton.AnchorBottomRight();
 	m_my2KButton.SetPosition(-200,-120);
+
+	if (GetLanguage() == "FRA" || GetLanguage() == "SPA" || GetLanguage() == "DEU" || GetLanguage() == "ITA")
+	{
+		m_my2KButton.SetPosition(-200, -170);
+	}
 	
 	SubscribeToOnCleanupWorld();
 	FiraxisLiveClient = `FXSLIVE;
@@ -67,6 +89,12 @@ simulated function OnInit()
 	SetTimer(1.0f, true, nameof(UpdateMy2KButtonStatus));
 
 	bIsFullScreenViewport = `XENGINE.GameViewport.IsFullScreenViewport();
+
+	m_bTLELadderSave = false;
+
+	OnlineEventMgr = `ONLINEEVENTMGR;
+	OnlineEventMgr.AddUpdateSaveListCompleteDelegate(CheckForLadderData);
+	OnlineEventMgr.UpdateSaveGameList();
 }
 
 function ImportBaseGameCharacterPool()
@@ -106,6 +134,7 @@ simulated function UpdateMenu()
 	CreateItem('Load', m_sLoad);
 	CreateItem('MP', m_sMultiplayer);
 	CreateItem('Challenge', m_sChallengeMode);
+	CreateItem('TLE', class'UIShell'.default.m_sTLEHUB, true, !`ONLINEEVENTMGR.HasTLEEntitlement(), m_strNoTLEEntitlementTooltip);
 	CreateItem('Options', m_sOptions);
 	CreateItem('CharacterPool', m_sCharacterPool);
 	CreateItem('Exit', m_sExitToDesktop);
@@ -114,7 +143,9 @@ simulated function UpdateMenu()
 	for (i = 0; i < MainMenu.Length; ++i)
 	{
 		MainMenu[i].ProcessMouseEvents(OnChildMouseEvent);
-}
+	}
+
+	UIX2MenuButton(MainMenu[4]).NeedsAttention( !m_bTLELadderSave );
 }
 
 // Button callbacks
@@ -148,10 +179,17 @@ simulated function OnMenuButtonClicked(UIButton button)
 			m_bLaunchChallengeAfterRequest = true;
 		}
 		break;
+	case 'TLE':
+		if( `ONLINEEVENTMGR.HasTLEEntitlement() )
+		{
+			XComShellPresentationLayer(Owner).UITLEHub();
+		}
+		break;
 	case 'Options':
 		XComPresentationLayerBase(Owner).UIPCOptions();
 		break;
 	case 'CharacterPool':
+		`XCOMHISTORY.ResetHistory();
 		XComPresentationLayerBase(Owner).UICharacterPool();
 		`XCOMGRI.DoRemoteEvent('StartCharacterPool');
 		break;
@@ -189,45 +227,55 @@ simulated function OnReceiveFocus()
 	XComShellPresentationLayer(Movie.Pres).UIShellScreen3D();
 }
 
+simulated function CheckForLadderData(bool bWasSuccessful)
+{
+	local int SaveIdx;
+	local bool IsLadder;
+	local SaveGameHeader Header;
+
+	m_LadderSaveData.Length = 0;
+
+	if (bWasSuccessful)
+		`ONLINEEVENTMGR.GetSaveGames(m_arrSaveGames);
+	else
+		return;
+	
+	class'UILoadGame'.static.FilterSaveGameList(m_arrSaveGames, , false);
+
+	SaveIdx = 0;
+	while (SaveIdx < m_arrSaveGames.Length)
+	{
+		Header = m_arrSaveGames[SaveIdx].SaveGames[0].SaveGameHeader;
+		IsLadder = Header.bLadder;
+		if (IsLadder)
+			m_bTLELadderSave = true;
+
+		++SaveIdx;
+	}
+
+	UpdateMenu();
+}
+
 function ProcessMy2KButtonClick(UIButton Button)
 {
-	local EStatusType StatusType;
+	local bool bIsAccountAnnoymous, bIsAccountFull, bIsAccountPlatform;
 
-	StatusType = FiraxisLiveClient.GetStatus();
-	`log( `location @ `ShowEnum(EStatusType, StatusType, StatusType),,'FiraxisLive');
+	bIsAccountAnnoymous = FiraxisLiveClient.IsAccountAnonymous();
+	bIsAccountFull = FiraxisLiveClient.IsAccountFull();
+	bIsAccountPlatform = FiraxisLiveClient.IsAccountPlatform();
+	`log( `location @ `ShowVar(bIsAccountAnnoymous) @ `ShowVar(bIsAccountFull) @ `ShowVar(bIsAccountPlatform), , 'FiraxisLive');
 
-	switch(StatusType)
+	if (bIsAccountAnnoymous)
 	{
-	case E2kST_OfflineLoggedInCached:
-	case E2kST_OnlineLoggedIn:
-		if( FiraxisLiveClient.IsAccountAnonymous() )
-		{
-			FiraxisLiveClient.UpgradeAccount();
-			break;
-		}
-		if( FiraxisLiveClient.IsAccountPlatform() )
-		{
-			FiraxisLiveClient.StartLinkAccount();
-			break;
-		}
-		if( FiraxisLiveClient.IsAccountFull() )
-		{
-			PromptForUnlink();
-			break;
-		}
-
-	case E2kST_Unknown:
-	case E2kST_Online:
-	case E2kST_Offline:
-	case E2kST_OfflineBanned:
-	case E2kST_OfflineBlocked:
-	case E2kST_OfflineRejectedWhitelist:
-	case E2kST_OfflineRejectedCapacity:
-	case E2kST_OfflineLegalAccepted:
-	case E2kST_LoggedInDoormanOffline:
-	default:
-		FiraxisLiveClient.StartLoginRequest();
-		break;
+		FiraxisLiveClient.UpgradeAccount();
+	}
+	else if (bIsAccountFull)
+	{
+		PromptForUnlink();
+	}
+	else if (bIsAccountPlatform)
+	{
+		FiraxisLiveClient.StartLinkAccount();
 	}
 }
 
@@ -308,8 +356,7 @@ function OnReceivedMOTD(string Category, array<MOTDMessageData> Messages)
 function CheckForNewChallenges()
 {
 	ClearTimer(nameof(CheckForNewChallenges));
-	`log(`location @ `ShowEnum(EStatusType, FiraxisLiveClient.GetStatus(), Status));
-	ScriptTrace();
+	`log(`location @ `ShowVar(FiraxisLiveClient.IsLoggedIn(), IsLoggedIn));
 	if (IsOnline())
 	{
 		if (!m_bChallengeRequestInFlight)
@@ -331,14 +378,7 @@ function CheckForNewChallenges()
 
 function bool IsOnline()
 {
-	switch (FiraxisLiveClient.GetStatus())
-	{
-	case E2kST_Online:
-	case E2kST_OnlineLoggedIn:
-		return true;
-		break;
-	}
-	return false;
+	return FiraxisLiveClient.IsLoggedIn();
 }
 
 function OpenChallengeModeUI()
@@ -402,11 +442,19 @@ simulated event OnCleanupWorld()
 }
 simulated function Cleanup()
 {
+	local XComOnlineEventMgr OnlineEventMgr;
+
 	super.Cleanup();
 	FiraxisLiveClient.ClearLoginStatusDelegate(LoginStatusChange);
 	FiraxisLiveClient.ClearReceivedChallengeModeIntervalStartDelegate(OnReceivedChallengeModeIntervalStart);
 	FiraxisLiveClient.ClearReceivedChallengeModeIntervalEndDelegate(OnReceivedChallengeModeIntervalEnd);
 	FiraxisLiveClient.ClearReceivedChallengeModeIntervalEntryDelegate(OnReceivedChallengeModeIntervalEntry);
+
+	OnlineEventMgr = `ONLINEEVENTMGR;
+	if (OnlineEventMgr != none)
+	{
+		OnlineEventMgr.ClearUpdateSaveListCompleteDelegate(CheckForLadderData);
+	}
 
 	ClearTimer(nameof(UpdateMy2KButtonStatus));
 

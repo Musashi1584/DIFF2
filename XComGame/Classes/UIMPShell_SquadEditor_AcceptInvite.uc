@@ -11,7 +11,7 @@ class UIMPShell_SquadEditor_AcceptInvite extends UIMPShell_SquadEditor;
 
 defaultproperties
 {
-	UINextScreenClass=None
+	UINextScreenClass = None
 	m_bAddRightNavButton = false;
 
 	TEMP_strSreenNameText="Accepting Invite Squad Editor"

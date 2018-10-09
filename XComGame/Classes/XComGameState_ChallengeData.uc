@@ -38,6 +38,8 @@ var bool KillBonus;
 var bool JakeBonus;
 var int GarthBonus;
 
+var int OfflineID;
+
 cpptext
 {
 	virtual void Serialize(FArchive& Ar);

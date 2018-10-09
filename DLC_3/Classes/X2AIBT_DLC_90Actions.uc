@@ -109,6 +109,7 @@ function bt_status ScoreTargetForOverload()
 		m_kBehavior.BT_AddToTargetScore(-1000);
 		return BTS_FAILURE;
 	}
+	return BTS_SUCCESS;
 }
 
 function bt_status FindDestinationTowardsSelfDestructTargets()

@@ -442,6 +442,8 @@ var(OutputMask) const bool bOutputSpecular;
 var(OutputMask) const bool bOutputRoughness;
 var(OutputMask) const bool bOutputNormals;
 
+var private bool bNeverUseLocalCubemap;
+
 cpptext
 {
 	// Constructor.

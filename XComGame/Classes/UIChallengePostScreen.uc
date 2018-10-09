@@ -59,6 +59,8 @@ simulated function OnInit( )
 	local string TempBlank;
 
 	local XComChallengeModeManager ChallengeModeManager;
+	local XComGameState_ChallengeData ChallengeData;
+	local XComOnlineProfileSettings ProfileSettings;
 	local WorldInfo LocalWorldInfo;
 	local int Year, Month, DayOfWeek, Day, Hour, Minute, Second, Millisecond;
 	local string TimeString, DescriptionString;
@@ -83,8 +85,31 @@ simulated function OnInit( )
 	`ONLINEEVENTMGR.FormatTimeStampSingleLine12HourClock( TimeString, Year, Month, Day, Hour, Minute );
 
 	ChallengeModeManager = XComEngine(Class'GameEngine'.static.GetEngine()).ChallengeModeManager;
+	ChallengeData = XComGameState_ChallengeData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_ChallengeData', true));
+	BattleData = XComGameState_BattleData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_BattleData', true));
+
 	ChallengeScore = ChallengeModeManager.GetTotalScore();
 	MaxChallengeScore = ChallengeModeManager.GetMaxChallengeScore();
+
+	if (!bMissionFailed && (ChallengeData != none) && `ONLINEEVENTMGR.bIsLocalChallengeModeGame)
+	{
+		ProfileSettings = `XPROFILESETTINGS;
+
+		if(BattleData.bLocalPlayerWon)
+			++ProfileSettings.Data.HubStats.NumOfflineChallengeVictories;
+
+		if (ProfileSettings.Data.HubStats.OfflineChallengeCompletion.Find(ChallengeData.OfflineID) == INDEX_NONE)
+		{
+			ProfileSettings.Data.HubStats.OfflineChallengeCompletion.AddItem(ChallengeData.OfflineID);
+		}
+
+		m_LeaderboardButton.Hide();
+
+		if (ChallengeScore > ProfileSettings.Data.HubStats.OfflineChallengeHighScore)
+			ProfileSettings.Data.HubStats.OfflineChallengeHighScore = ChallengeScore;
+
+		`ONLINEEVENTMGR.SaveProfileSettings();
+	}
 
 	BattleData = XComGameState_BattleData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
 	bMissionFailed = (!BattleData.bLocalPlayerWon);

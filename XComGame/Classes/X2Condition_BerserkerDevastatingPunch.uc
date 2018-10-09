@@ -82,6 +82,7 @@ event name CallMeetsConditionWithSource(XComGameState_BaseObject kTarget, XComGa
 	
 	return 'AA_Success';
 }
+
 defaultproperties
 {
 	bFailOnNonUnitTargets=true

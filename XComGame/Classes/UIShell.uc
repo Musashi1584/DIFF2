@@ -21,6 +21,7 @@ var localized string m_sStrategy;
 var localized string m_sTactical;
 var localized string m_sTutorial;
 var localized string m_sFinalShellDebug;
+var localized string m_sTLEHUB;
 
 //------------------------------------------------------
 // MEMBER DATA
@@ -262,6 +263,7 @@ simulated function UpdateMenu()
 
 	CreateItem('Tactical', m_sTactical);
 	CreateItem('Strategy', m_sStrategy);
+	CreateItem('TLE', m_sTLEHUB, true, !`ONLINEEVENTMGR.HasTLEEntitlement(), class'UIFinalShell'.default.m_strNoTLEEntitlementTooltip);
 	CreateItem('Load', m_sLoad);
 	CreateItem('Special', m_sSpecial);
 	CreateItem('Options', m_sOptions);
@@ -270,15 +272,41 @@ simulated function UpdateMenu()
 	MainMenuContainer.Navigator.SelectFirstAvailable();
 }
 
-function CreateItem(Name ButtonName, string Label)
+function CreateItem(Name ButtonName, string Label, optional bool bIsPsi = false, optional bool bDisabled = false, optional string strDisabledTooltip = "")
 {
 	local UIX2MenuButton Button; 
 
 	Button = Spawn(class'UIX2MenuButton', MainMenuContainer);
 
-	Button.InitMenuButton(false, ButtonName, Label, OnMenuButtonClicked);
+	Button.InitMenuButton(bIsPsi, ButtonName, Label, OnMenuButtonClicked);
 	Button.OnSizeRealized = OnButtonSizeRealized;
+	if( bDisabled )
+	{
+		Button.SetDisabled(bDisabled, strDisabledTooltip);
+		UpdateButtonDisableTooltip(Button, strDisabledTooltip);
+	}
 	MainMenu.AddItem(Button);
+}
+
+simulated function UpdateButtonDisableTooltip(UIX2MenuButton Button, string strDisabledTooltip) 
+{
+	local UITextTooltip Tooltip;
+
+	Button.RemoveTooltip();
+
+	Button.CachedTooltipId = Movie.Pres.m_kTooltipMgr.AddNewTooltipTextBox(strDisabledTooltip,
+												  0,
+												  -20,
+												  string(Button.MCPath) $ ".bg",
+												  ,
+												  true,
+												  class'UIUtilities'.const.ANCHOR_BOTTOM_LEFT,
+												  true,
+												  400); 
+
+	Tooltip = UITextTooltip(Movie.Pres.m_kTooltipMgr.GetTooltipByID(Button.CachedTooltipId));
+	Tooltip.SetUsePartialPath(Button.CachedTooltipId, true);
+	Button.bHasTooltip = true;
 }
 
 simulated function OnButtonSizeRealized()
@@ -327,6 +355,13 @@ simulated function OnMenuButtonClicked(UIButton button)
 	case 'Strategy':
 		`XCOMHISTORY.ResetHistory();
 		XComShellPresentationLayer(Owner).UIStrategyShell();
+		break;
+	case 'TLE':
+		if( `ONLINEEVENTMGR.HasTLEEntitlement() )
+		{
+			`XCOMHISTORY.ResetHistory();
+			XComShellPresentationLayer(Owner).UITLEHub();
+		}
 		break;
 	case 'Load':
 		`XCOMHISTORY.ResetHistory();
@@ -500,6 +535,7 @@ simulated function UIDebugButtonClicked(UIButton button)
 	case 'DynamicDebug': XComShellPresentationLayer(Owner).UIDynamicDebugScreen(); break;
 	case 'MultiplayerMenus': XComShellPresentationLayer(Owner).StartMPShellState(); break;
 	case 'CharacterPool':
+		`XCOMHISTORY.ResetHistory();
 		XComPresentationLayerBase(Owner).UICharacterPool();
 		break;
 	case 'IntervalChallenge': `CHALLENGEMODE_MGR.OpenChallengeModeUI(); break;

@@ -1444,6 +1444,36 @@ simulated function UIRaiseDialog( TDialogueBoxData kData )
 {
 	m_2DMovie.DialogBox.AddDialog( kData );
 }
+
+simulated function UITLEUnitStats(array<XComGameState_Unit> unitArray, int startindex, XComGameState CheckGameState)
+{
+	local UITLEUnitStats UnitStatsScreen;
+
+	UnitStatsScreen = Spawn(class'UITLEUnitStats', self);
+	ScreenStack.Push(UnitStatsScreen, Get2DMovie());
+
+	UnitStatsScreen.m_UnitArray = unitArray;
+	UnitStatsScreen.m_CheckGameState = CheckGameState;
+	UnitStatsScreen.m_CurrentIndex = startindex;
+	UnitStatsScreen.UpdateData(unitArray[startindex], CheckGameState);
+}
+
+simulated function UITLELadderMedalProgressScreen()
+{
+	local UITLELadderMedalProgressScreen LadderMedalProgressScreen;
+
+	LadderMedalProgressScreen = Spawn(class'UITLELadderMedalProgressScreen', self);
+	ScreenStack.Push(LadderMedalProgressScreen, Get2DMovie());
+}
+
+simulated function UITLE_LadderDifficulty()
+{
+	local UITLE_LadderDifficulty difficultyScreen;
+
+	difficultyScreen = Spawn(class'UITLE_LadderDifficulty', self);
+	ScreenStack.Push(difficultyScreen, Get2DMovie());
+}
+
 simulated function bool UIIsShowingDialog()
 {
 	return m_2DMovie.DialogBox.ShowingDialog();
@@ -1898,10 +1928,7 @@ simulated function UpdateShortcutText()
 
 simulated function UIPCOptions( optional bool bIn3D = false ) 
 {
-	local UIMovie TargetMovie;
-	TargetMovie = XComShellPresentationLayer(self) == none ? Get2DMovie() : Get3DMovie();
-
-	ScreenStack.Push( Spawn( class'UIOptionsPCScreen', self ), TargetMovie );
+	ScreenStack.Push( Spawn( class'UIOptionsPCScreen', self ), Get2DMovie());
 }
 
 simulated function bool IsPCOptionsRaised() { return (ScreenStack.GetScreen(class'UIOptionsPCScreen') != none); }
@@ -1966,6 +1993,11 @@ reliable client function StateObjectReference GetCustomizationUnitRef()
 reliable client function UICharacterPool()
 {
 	ScreenStack.Push(Spawn(class'UICharacterPool', self));
+}
+
+reliable client function UISoundtrackPicker()
+{
+	ScreenStack.Push(Spawn(class'UIShellSoundtrackPicker', self), Get3DMovie());
 }
 
 reliable client function UICustomize_Menu(XComGameState_Unit Unit, Actor ActorPawn, optional XComGameState CheckGameState)
@@ -2338,18 +2370,21 @@ simulated function UIChallengeEventBanner()
 	local EUIState TextState;
 	local float TotalPlayersStarted;
 
-	foreach AllActors(class'X2TacticalChallengeModeManager', ChallengeModeManager)
+	if (!`ONLINEEVENTMGR.bIsLocalChallengeModeGame)
 	{
-		break;
-	}
+		foreach AllActors(class'X2TacticalChallengeModeManager', ChallengeModeManager)
+		{
+			break;
+		}
 
-	TotalPlayersStarted = ChallengeModeManager.GetTotalPlayersStarted();
+		TotalPlayersStarted = ChallengeModeManager.GetTotalPlayersStarted();
 
-	while(ChallengeModeManager.GetCurrentEvent(PendingEvent))
-	{
-		GenerateChallengeEventStrings(PendingEvent, TotalPlayersStarted, Notice, ImagePath, Subtitle, Value, TextState);
-		NotifyBanner(Notice, ImagePath, Subtitle, Value, TextState);
-		ChallengeModeManager.NextEvent(true);
+		while (ChallengeModeManager.GetCurrentEvent(PendingEvent))
+		{
+			GenerateChallengeEventStrings(PendingEvent, TotalPlayersStarted, Notice, ImagePath, Subtitle, Value, TextState);
+			NotifyBanner(Notice, ImagePath, Subtitle, Value, TextState);
+			ChallengeModeManager.NextEvent(true);
+		}
 	}
 }
 
@@ -2363,7 +2398,7 @@ private function GenerateChallengeEventStrings(PendingEventType PendingEvent, fl
 	ImagePath = "";
 	ParamTag.StrValue0 = string(PendingEvent.Turn);
 	Value = `XEXPAND.ExpandString(default.ChallengeTurnLabel);
-	
+
 	
 	TotalPlayersSeeingEvent = PendingEvent.NumPlayersCurrent + PendingEvent.NumPlayersPrior + PendingEvent.NumPlayersSubsequent;
 	switch(PendingEvent.EventType)

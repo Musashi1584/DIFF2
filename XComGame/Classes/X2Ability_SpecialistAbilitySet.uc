@@ -41,6 +41,7 @@ static function array<X2DataTemplate> CreateTemplates()
 	Templates.AddItem(ConstructIntrusionProtocol('IntrusionProtocol_Chest', 'Hack_Chest'));
 	Templates.AddItem(ConstructIntrusionProtocol('IntrusionProtocol_Workstation', 'Hack_Workstation'));
 	Templates.AddItem(ConstructIntrusionProtocol('IntrusionProtocol_ObjectiveChest', 'Hack_ObjectiveChest'));
+	Templates.AddItem(ConstructIntrusionProtocol('IntrusionProtocol_Scan', 'Hack_Scan'));
 	Templates.AddItem(FinalizeIntrusion('FinalizeIntrusion', false));
 	Templates.AddItem(FinalizeIntrusion('FinalizeHaywire', true));
 	Templates.AddItem(CancelIntrusion());
@@ -244,7 +245,9 @@ static function XComGameState AttachGremlinToTarget_BuildGameState( XComGameStat
 		GremlinUnitState = XComGameState_Unit(NewGameState.ModifyStateObject(class'XComGameState_Unit', GremlinItemState.CosmeticUnitRef.ObjectID));
 	}
 
-	`assert(TargetUnitState != none && GremlinItemState != none && GremlinUnitState != none);
+	`assert(TargetUnitState != none);
+	`assert(GremlinItemState != none); 
+	`assert(GremlinUnitState != none);
 
 	GremlinItemState.AttachedUnitRef = TargetUnitState.GetReference();
 
@@ -863,6 +866,7 @@ static function X2AbilityTemplate IntrusionProtocol()
 	Template.AdditionalAbilities.AddItem('IntrusionProtocol_Chest');
 	Template.AdditionalAbilities.AddItem('IntrusionProtocol_Workstation');
 	Template.AdditionalAbilities.AddItem('IntrusionProtocol_ObjectiveChest');
+	Template.AdditionalAbilities.AddItem('IntrusionProtocol_Scan');
 
 	Template.bDontDisplayInAbilitySummary = false;
 

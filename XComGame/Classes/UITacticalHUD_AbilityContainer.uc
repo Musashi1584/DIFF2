@@ -169,7 +169,8 @@ simulated function bool AbilityRequiresTargetingActivation(int Index)
 	{
 		if (ClassIsChildOf(AbilityState.GetMyTemplate().TargetingMethod, class'X2TargetingMethod_Grenade') ||
 			ClassIsChildOf(AbilityState.GetMyTemplate().TargetingMethod, class'X2TargetingMethod_Cone') ||
-			ClassIsChildOf(AbilityState.GetMyTemplate().TargetingMethod, class'X2TargetingMethod_Line'))
+			ClassIsChildOf(AbilityState.GetMyTemplate().TargetingMethod, class'X2TargetingMethod_Line') ||
+			ClassIsChildOf(AbilityState.GetMyTemplate().TargetingMethod, class'X2TargetingMethod_BlasterLauncher'))
 		{
 			return true;
 		}
@@ -183,7 +184,8 @@ simulated function bool IsTargetingMethodActivated()
 	if (TargetingMethod != none &&
 		(TargetingMethod.IsA('X2TargetingMethod_Grenade') ||
 			TargetingMethod.IsA('X2TargetingMethod_Cone') ||
-			TargetingMethod.IsA('X2TargetingMethod_Line')))
+			TargetingMethod.IsA('X2TargetingMethod_Line') ||
+			TargetingMethod.IsA('X2TargetingMethod_BlasterLauncher')))
 	{
 		return true;
 	}

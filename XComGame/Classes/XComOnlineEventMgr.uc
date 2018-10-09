@@ -23,7 +23,7 @@ enum EOnlineStatusType
 };
 
 const LowestCompatibleCheckpointVersion = 21;
-const CheckpointVersion = 21;
+const CheckpointVersion = 22;
 const StorageRemovalWarningDelayTime = 1.0; // needed to prevent us from showing this on the very first frame if we pulled the storage device during load
 
 struct native TMPLastMatchInfo_Player
@@ -130,6 +130,8 @@ var bool bInitiateReplayAfterLoad;
 var bool bInitiateValidationAfterLoad;	//Start the validator after loading the map.
 var bool bIsChallengeModeGame;			//True if this game is started from Challenge Mode.
 var int  ChallengeModeSeedGenNum;		//Greater than 0 is auto-generating Challenge Start State #
+var bool bGenerateMapForSkirmish;
+var bool bIsLocalChallengeModeGame;
 
 // Campaign Settings to pass to Strategy Start after the tutorial
 var string CampaignStartTime;
@@ -169,6 +171,8 @@ var bool bAchievementsDisabledXComHero;     // Achievements have been disabled b
 
 var private int DLCWatchVarHandle;
 
+var localized string	m_strSkirmishFormatString;
+var localized string	m_strLadderFormatString;
 var localized string    m_strIronmanFormatString;
 var localized string	m_strAutosaveTacticalFormatString;
 var localized string	m_strAutosaveStrategyFormatString;
@@ -1638,6 +1642,7 @@ simulated function OnReadTitleFileComplete(bool bWasSuccessful,string FileName)
 simulated native function bool HasEliteSoldierPack();
 simulated native function bool HasSlingshotPack();
 simulated native function bool HasDLCEntitlement(int ContentID);
+simulated native function bool HasTLEEntitlement();
 
 simulated function ReadProfileSettings()
 {
@@ -2881,6 +2886,7 @@ event FillInHeaderForSave(out SaveGameHeader Header, out string SaveFriendlyName
 	local XComGameState_HeadquartersXCom XComHQ;
 	local XGParamTag kTag;
 	local string PrePostString;
+	local XComGameState_LadderProgress LadderData;
 
 	kTag = XGParamTag(`XEXPANDCONTEXT.FindTag("XGParam"));
 	History = `XCOMHISTORY;
@@ -2970,6 +2976,13 @@ event FillInHeaderForSave(out SaveGameHeader Header, out string SaveFriendlyName
 		}
 	}
 
+	LadderData = XComGameState_LadderProgress( History.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) );
+	if (LadderData != none)
+	{
+		Header.bLadder = true;
+		Header.GameNum = LadderData.LadderIndex;
+		Header.Mission = LadderData.LadderRung;
+	}
 
 	// user-generated description
 	if( m_sCustomSaveDescription != "" )
@@ -2999,8 +3012,17 @@ event FillInHeaderForSave(out SaveGameHeader Header, out string SaveFriendlyName
 		kTag.IntValue1 = Header.Mission;
 		kTag.IntValue2 = Header.Turn;
 
+		// in progress ladder
+		if (Header.bLadder)
+		{
+			Header.PlayerSaveDesc = class'XComLocalizer'.static.ExpandString(m_strLadderFormatString);
+		}
+		else if (BattleData.m_strDesc == "Skirmish Mode") // skirmish mode
+		{
+			Header.PlayerSaveDesc = class'XComLocalizer'.static.ExpandString(m_strSkirmishFormatString);
+		}
 		// ironman saves
-		if( Header.bIsIronman )
+		else if( Header.bIsIronman )
 		{
 			Header.PlayerSaveDesc = class'XComLocalizer'.static.ExpandString(m_strIronmanFormatString);
 		}
@@ -3185,6 +3207,8 @@ private event DeleteSaveGameData(byte LocalUserNum, int DeviceId, string FileNam
 //Saving is simple, fire and forget
 native function SaveGame(int SlotIndex, bool IsAutosave, bool IsQuicksave, delegate<WriteSaveGameComplete> WriteSaveGameCompleteCallback = none, optional bool bDebugSave, optional bool bPreMissionSave, optional bool bPostMissionSave, optional int PartialHistoryLength = -1);
 native function OnSaveCompleteInternal(bool bWasSuccessful, byte LocalUserNum, int DeviceId, string FriendlyName, string FileName, string SaveFileName); //The main purpose of this is to clear the save game serializing flag so that new saves can happen
+native function SaveLadderGame( delegate<WriteSaveGameComplete> WriteSaveGameCompleteCallback = none );
+native function SaveLadderSummary( );
  
 //Loading is a 3 step process:
 native function LoadGame(int SlotIndex, delegate<ReadSaveGameComplete> ReadSaveGameCompleteCallback = none);  //1. Initiate the (possibly async) read for a specific save from the player's storage. Calls OnReadSaveGameDataComplete when this is done.

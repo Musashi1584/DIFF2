@@ -218,6 +218,11 @@ var int AIOrderPriority; // default 0. Lower numbers get priority in turn order.
 
 var float ChallengePowerLevel; // In Challenge mode, power level assigned to this unit if they are in your squad
 
+var( X2CharacterTemplate ) Array<AnimSet> AdditionalAnimSets;
+var( X2CharacterTemplate ) Array<AnimSet> AdditionalAnimSetsFemale;
+
+var config string strSkirmishImage;
+
 // some characters need to do different reveal matinees based on their current state.
 // this delegate allows characters to specify that matinee prefix
 delegate string GetRevealMatineePrefix(XComGameState_Unit UnitState);

@@ -94,6 +94,7 @@ function string GetObjectiveText(int TextLine, optional name QuestItemTemplateNa
 		return ObjectiveTextPools[TextLine];
 	}
 }
+
 event int GetNumChallengeObjectives()
 {
 	local XComGameStateHistory History;

@@ -7,6 +7,7 @@
 //  Copyright (c) 2016 Firaxis Games, Inc. All rights reserved.
 //---------------------------------------------------------------------------------------
 class XComGameState_ObjectivesList extends XComGameState_BaseObject
+	native( Core )
 	dependson(X2StrategyGameRulesetDataStructures);
 
 // since the counter does not have text, we have dedicated text indices for it

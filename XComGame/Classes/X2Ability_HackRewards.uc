@@ -120,6 +120,8 @@ static function X2AbilityTemplate HackRewardControlRobot()
 	ControlEffect = class'X2StatusEffects'.static.CreateMindControlStatusEffect(default.CONTROL_ROBOT_DURATION, true, bInfiniteDuration);
 	Template.AddTargetEffect(ControlEffect);
 
+	Template.AddTargetEffect(class'X2StatusEffects'.static.CreateMindControlRemoveEffects());
+
 	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;
 	Template.BuildVisualizationFn = TypicalAbility_BuildVisualization;
 	Template.bSkipFireAction = true;
@@ -156,6 +158,8 @@ static function X2AbilityTemplate HackRewardControlRobotWithStatBoost()
 
 	ControlEffect = class'X2StatusEffects'.static.CreateMindControlStatusEffect(default.CONTROL_ROBOT_DURATION, true, bInfiniteDuration);
 	Template.AddTargetEffect(ControlEffect);
+
+	Template.AddTargetEffect(class'X2StatusEffects'.static.CreateMindControlRemoveEffects());
 
 	StatEffect = new class'X2Effect_PersistentStatChange';
 	StatEffect.BuildPersistentEffect(default.CONTROL_ROBOT_DURATION, bInfiniteDuration, false, false, eGameRule_PlayerTurnBegin);
@@ -248,6 +252,8 @@ static function X2AbilityTemplate HackRewardControlTurret()
 	ControlEffect = class'X2StatusEffects'.static.CreateMindControlStatusEffect(default.CONTROL_TURRET_DURATION, true, bInfiniteDuration);
 	Template.AddTargetEffect(ControlEffect);
 
+	Template.AddTargetEffect(class'X2StatusEffects'.static.CreateMindControlRemoveEffects());
+
 	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;
 	Template.BuildVisualizationFn = TypicalAbility_BuildVisualization;
 	Template.bSkipFireAction = true;
@@ -284,6 +290,8 @@ static function X2AbilityTemplate HackRewardControlTurretWithStatBoost()
 
 	ControlEffect = class'X2StatusEffects'.static.CreateMindControlStatusEffect(default.CONTROL_TURRET_DURATION, true, bInfiniteDuration);
 	Template.AddTargetEffect(ControlEffect);
+
+	Template.AddTargetEffect(class'X2StatusEffects'.static.CreateMindControlRemoveEffects());
 
 	StatEffect = new class'X2Effect_PersistentStatChange';
 	StatEffect.BuildPersistentEffect(default.CONTROL_TURRET_DURATION, bInfiniteDuration, false, false, eGameRule_PlayerTurnBegin);

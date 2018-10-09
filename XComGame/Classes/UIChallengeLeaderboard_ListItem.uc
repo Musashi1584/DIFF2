@@ -14,6 +14,7 @@ var string m_currentStatus;
 var qword m_IntervalID;
 var UniqueNetId m_LocalPlayerID;
 var string m_LeaderboardName;
+var bool bShowPercentile;
 
 
 simulated function UIChallengeLeaderboard_ListItem InitChallengeListItem(qword IntervalID, optional name InitName, optional name InitLibID)
@@ -274,7 +275,7 @@ function SetChallengeData(bool bIsPlayer, string Rank, string playerName, string
 {
 	mc.BeginFunctionOp("setData");
 	mc.QueueBoolean(bIsPlayer);
-	if( bIsPlayer )
+	if (bIsPlayer && bShowPercentile)
 	{
 		mc.QueueString(Rank @ "(" $ TopPercentile $"%)");
 	}
@@ -411,4 +412,5 @@ defaultproperties
 
 	width = 1265;
 	height = 43;
+	bShowPercentile=false
 }

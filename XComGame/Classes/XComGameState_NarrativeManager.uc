@@ -97,6 +97,9 @@ function OnBeginTacticalPlay(XComGameState NewGameState)
 		
 	super.OnBeginTacticalPlay(NewGameState);
 
+	if (class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( ))
+		return; // none of these are relevant to tactical game modes so we just won't listen
+
 	EventManager = `XEVENTMGR;
 	ThisObj = self;
 
@@ -184,6 +187,9 @@ function TriggerDynamicNarrative(Object EventData, Object EventSource, XComGameS
 	local array<X2DynamicNarrativeMomentTemplate> ValidMoments, PriorityMoments;
 	local XComNarrativeMoment MomentToPlay;
 	local name NarrativeName, SequenceID;
+
+	if (class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( ))
+		return; // none of these are relevant to tactical game modes so we just won't listen
 
 	if( GameState.GetContext().InterruptionStatus == eInterruptionStatus_Interrupt )
 	{

@@ -837,7 +837,7 @@ static function CompleteUnitHealing(XComGameState AddToGameState, StateObjectRef
 				CostScalars.Length = 0;
 				XComHQ.RefundStrategyCost(AddToGameState, class'X2StrategyElement_XpackFacilities'.default.BoostSoldierCost, CostScalars);
 			}
-						
+
 			// Set Unit to ready if needed
 			if (NewUnitState.GetMentalState() != eMentalState_Ready)
 			{

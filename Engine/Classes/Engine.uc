@@ -1338,6 +1338,8 @@ native function color GetNonDirectionalAmbientCubeLighting();
 
 static native function SetCharacterLightRigsEnabled(bool bEnabled);
 
+native function RenderExtraSubtitles();
+
 
 defaultproperties
 {

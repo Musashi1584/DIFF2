@@ -25,6 +25,7 @@ var localized string m_strEndTurn;
 var localized string m_strNoKeyBoundString;
 var localized string m_strCancelShot;
 var localized string m_strShotInfo;
+var localized string m_strSoldierInfo;
 
 var int m_optPrevSoldier;
 var int m_optNextSoldier;

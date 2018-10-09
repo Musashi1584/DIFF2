@@ -41,6 +41,7 @@ var localized string m_kQuitChallengeGameDialogue_body;
 var localized string m_kQuitReplayDialogue_body;
 var localized string m_kQuitMPRankedGameDialogue_body;
 var localized string m_kQuitMPUnrankedGameDialogue_body;
+var localized string m_kQuitLegacyOperationDialogue_body;
 var localized string m_sRestartLevel;
 var localized string m_sRestartConfirm_title;
 var localized string m_sRestartConfirm_body;
@@ -53,6 +54,9 @@ var localized string m_sUnableToAbortTitle;
 var localized string m_sUnableToAbortBody;
 var localized string m_kSaveAndExitGameDialogue_title;
 var localized string m_kSaveAndExitGameDialogue_body;
+
+var localized string m_sRestartLadderConfirm_title;
+var localized string m_sRestartLadderConfirm_body;
 
 var int m_optReturnToGame;
 var int m_optSave;
@@ -273,7 +277,7 @@ simulated public function OnChildClicked(UIList ContainerList, int ItemIndex)
 			break;
 
 		case m_optRestart: // Restart Mission (only valid in tactical)
-			if (`BATTLE != none && WorldInfo.NetMode == NM_Standalone && !m_bIsIronman)
+			if (`BATTLE != none && WorldInfo.NetMode == NM_Standalone && (!m_bIsIronman || `XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) != none))
 				RestartMissionDialogue();				
 			break;
 
@@ -376,6 +380,13 @@ function Disconnect()
 		`FXSLIVE.AnalyticsGameTutorialExited( );
 	}
 
+	if (`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) != none)
+	{
+		`ONLINEEVENTMGR.SetShuttleToLadderMenu();
+	}
+
+	`ONLINEEVENTMGR.bIsLocalChallengeModeGame = false; // won't be in challenge mode anymore
+	
 	// End all currently playing VO when exiting the game before clearing the history
 	Movie.Pres.m_kNarrativeUIMgr.EndCurrentConversation(true);
 	Movie.Pres.UIEndGame();
@@ -406,11 +417,16 @@ function ExitGameDialogue()
 	}
 	else
 	{
-		kDialogData.strText = m_kExitGameDialogue_body; 
+		kDialogData.strText = m_kExitGameDialogue_body;
 		if (Movie.Pres.ScreenStack.HasInstanceOf(class'UIReplay') && !`REPLAY.bInTutorial)
 			kDialogData.strText = m_kQuitReplayDialogue_body;
 		else if (Movie.Pres.ScreenStack.HasInstanceOf(class'UIChallengeModeHUD'))
-			kDialogData.strText = m_kQuitChallengeGameDialogue_body;
+		{
+			if(Movie.Pres.ScreenStack.HasInstanceOf(class'UILadderModeHUD'))
+				kDialogData.strText = m_kQuitLegacyOperationDialogue_body;
+			else
+				kDialogData.strText = m_kQuitChallengeGameDialogue_body;
+		}
 
 		kDialogData.fnCallback = ExitGameDialogueCallback;
 	}
@@ -515,10 +531,19 @@ function UnableToAbortDialogue()
 function RestartMissionDialogue()
 {
 	local TDialogueBoxData kDialogData;
+	local XComGameState_LadderProgress LadderData;
+	local XGParamTag Param;
+
+	LadderData = XComGameState_LadderProgress(`XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ));
+	if (LadderData != none)
+	{
+		Param = XGParamTag(`XEXPANDCONTEXT.FindTag("XGParam"));
+		Param.IntValue0 = LadderData.RestartScorePenalty;
+	}
 
 	kDialogData.eType       = eDialog_Warning;
-	kDialogData.strTitle    = m_sRestartConfirm_title;
-	kDialogData.strText     = m_sRestartConfirm_body; 
+	kDialogData.strTitle    = LadderData == none ? m_sRestartConfirm_title : m_sRestartLadderConfirm_title;
+	kDialogData.strText     = LadderData == none ? m_sRestartConfirm_body : `XEXPAND.ExpandString( m_sRestartLadderConfirm_body );
 	kDialogData.strAccept   = m_sAccept; 
 	kDialogData.strCancel   = m_sCancel; 
 	kDialogData.fnCallback  = RestartMissionDialgoueCallback;
@@ -713,11 +738,11 @@ simulated function BuildMenu()
 
 	// no restart in multiplayer -tsmith 
 	if( kMPGRI == none &&
-		!m_bIsIronman &&
+		(!m_bIsIronman || `XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) != none) &&
 		XComPresentationLayer(Movie.Pres) != none &&
 		`TACTICALGRI != none &&
 		XGBattle_SP(`BATTLE).m_kDesc != None &&
-		(XGBattle_SP(`BATTLE).m_kDesc.m_iMissionType == eMission_Final || XGBattle_SP(`BATTLE).m_kDesc.m_bIsFirstMission || XGBattle_SP(`BATTLE).m_kDesc.m_iMissionType == eMission_HQAssault) && //Only visible in temple ship or first mission, per Jake. -bsteiner 6/12/12
+		(XGBattle_SP(`BATTLE).m_kDesc.m_iMissionType == eMission_Final || XGBattle_SP(`BATTLE).m_kDesc.m_bIsFirstMission || XGBattle_SP(`BATTLE).m_kDesc.m_iMissionType == eMission_HQAssault || `XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) != none) && //Only visible in temple ship or first mission, per Jake. -bsteiner 6/12/12
 		!`ONLINEEVENTMGR.bIsChallengeModeGame )
 	{
 		m_optRestart = iCurrent++; 
@@ -728,7 +753,7 @@ simulated function BuildMenu()
 		m_optRestart = -1;  //set options to -1 so they don't interfere with the switch statement on selection
 
 	// Only allow changing difficulty if in an active single player game and only at times where saving is permitted
-	if( Movie.Pres.m_eUIMode != eUIMode_Shell && kMPGRI == none && m_bAllowSaving && !`ONLINEEVENTMGR.bIsChallengeModeGame && !`REPLAY.bInReplay)
+	if( Movie.Pres.m_eUIMode != eUIMode_Shell && kMPGRI == none && m_bAllowSaving && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode() && !`REPLAY.bInReplay)
 	{
 		m_optChangeDifficulty = iCurrent++; 
 		//AS_AddOption(m_optChangeDifficulty, m_sChangeDifficulty, 0);

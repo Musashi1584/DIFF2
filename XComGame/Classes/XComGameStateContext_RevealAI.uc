@@ -48,6 +48,7 @@ function XComGameState ContextBuildGameState()
 	local int Index, iEvents;
 	local int RevealedUnitObjectID;
 	local X2EventManager EventManager;
+	local XComGameState_LadderProgress LadderData;
 
 	History = `XCOMHISTORY;
 
@@ -83,13 +84,20 @@ function XComGameState ContextBuildGameState()
 					XComHQ = XComGameState_HeadquartersXCom(NewGameState.ModifyStateObject(class'XComGameState_HeadquartersXCom', XComHQ.ObjectID));					
 					XComHQ.AddSeenCharacterTemplate(CharacterTemplate);
 
+					LadderData = XComGameState_LadderProgress( History.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true));
+
 					//Store this in the context for easy access in the visualizer action
 					if (`CHEATMGR == none || !`CHEATMGR.DisableFirstEncounterVO)
 					{
 						MissionState = XComGameState_MissionSite(History.GetGameStateForObjectID(XComHQ.MissionRef.ObjectID));
 						if (MissionState == none || !MissionState.GetMissionSource().bBlockFirstEncounterVO)
 						{
-							if (CharacterTemplate.SightedNarrativeMoments.Length > 0)
+							if (LadderData != none)
+							{
+								if (CharacterTemplate.SightedNarrativeMoments.Length > 1)
+									NewContext.FirstSightingMoment = CharacterTemplate.SightedNarrativeMoments[1];
+							}
+							else if (CharacterTemplate.SightedNarrativeMoments.Length > 0)
 								NewContext.FirstSightingMoment = CharacterTemplate.SightedNarrativeMoments[0];
 						}
 						NewContext.FirstEncounterCharacterTemplate = CharacterTemplate;

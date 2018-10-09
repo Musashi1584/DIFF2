@@ -59,7 +59,7 @@ static function X2AbilityTemplate CreateSlashAbility(optional Name AbilityName =
 	Template.AbilityToHitCalc = MeleeHitCalc;
 
 	Template.AbilityShooterConditions.AddItem(default.LivingShooterProperty);
-
+	
 	// May slash if the unit is burning or disoriented
 	SkipExclusions.AddItem(class'X2AbilityTemplateManager'.default.DisorientedName);
 	SkipExclusions.AddItem(class'X2StatusEffects'.default.BurningName);
@@ -84,6 +84,7 @@ static function X2AbilityTemplate CreateSlashAbility(optional Name AbilityName =
 	UnitPropertyCondition.ExcludeAlive = false;
 	UnitPropertyCondition.ExcludeDead = false;
 	UnitPropertyCondition.FailOnNonUnits = true;
+	UnitPropertyCondition.ExcludeFriendlyToSource = false;
 	ParthenogenicPoisonEffect.TargetConditions.AddItem(UnitPropertyCondition);
 	Template.AddTargetEffect(ParthenogenicPoisonEffect);
 
@@ -584,6 +585,7 @@ static function X2AbilityTemplate CreateSlashMPAbility(optional Name AbilityName
 	UnitPropertyCondition.ExcludeRobotic = true;
 	UnitPropertyCondition.ExcludeAlive = false;
 	UnitPropertyCondition.ExcludeDead = false;
+	UnitPropertyCondition.ExcludeFriendlyToSource = false;
 	ParthenogenicPoisonEffect.TargetConditions.AddItem(UnitPropertyCondition);
 	Template.AddTargetEffect(ParthenogenicPoisonEffect);
 

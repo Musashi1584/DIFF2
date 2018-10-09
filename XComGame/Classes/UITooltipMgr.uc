@@ -360,8 +360,8 @@ simulated function UITooltip GetTooltipByID( int ID )
 		if( Tooltip == TextTooltip )
 		{
 			if( TextTooltip.MatchesID(ID) )
-			return Tooltip; 
-	}
+				return Tooltip; 
+		}
 		else if( Tooltip.ID == ID )
 		{
 			return Tooltip;

@@ -436,7 +436,7 @@ Begin:
 	
 	if( SourceUnitPawn.GetAnimTreeController().CanPlayAnimation(Params.AnimName) )
 	{
-	FinishAnim(SourceUnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params));
+		FinishAnim(SourceUnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params));
 	}
 
 	if( bDoHackCaptainNarrative )
@@ -460,7 +460,7 @@ Begin:
 	Params.Looping = true;
 	if( SourceUnitPawn.GetAnimTreeController().CanPlayAnimation(Params.AnimName) )
 	{
-	SourceUnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
+		SourceUnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
 	}
 
 	if( !bSkipUIInput )

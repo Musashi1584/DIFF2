@@ -14,11 +14,11 @@ function int GetAttackingDamageModifier(XComGameState_Effect EffectState, XComGa
 			TargetUnit = XComGameState_Unit(TargetDamageable);
 			if (TargetUnit != none)
 			{
-			TargetUnit.GetUnitValue('DamageThisTurn', DamageUnitValue);
-			if (DamageUnitValue.fValue > 0)
-				return BonusDamage;
+				TargetUnit.GetUnitValue('DamageThisTurn', DamageUnitValue);
+				if (DamageUnitValue.fValue > 0)
+					return BonusDamage;
+			}			
 		}
-	}
 	}
 	
 	return 0;

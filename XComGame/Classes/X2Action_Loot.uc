@@ -213,24 +213,24 @@ Begin:
 		Params.PlayRate = GetNonCriticalAnimationSpeed();
 		if( UnitPawn.GetAnimTreeController().CanPlayAnimation(Params.AnimName) )
 		{
-		PlayingSequence = UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
-		if( Metadata.VisualizeActor.CustomTimeDilation < 1.0 )
-		{
-			Sleep(PlayingSequence.AnimSeq.SequenceLength * PlayingSequence.Rate * Metadata.VisualizeActor.CustomTimeDilation);
+			PlayingSequence = UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
+			if( Metadata.VisualizeActor.CustomTimeDilation < 1.0 )
+			{
+				Sleep(PlayingSequence.AnimSeq.SequenceLength * PlayingSequence.Rate * Metadata.VisualizeActor.CustomTimeDilation);
+			}
+			else
+			{
+				FinishAnim(PlayingSequence);
+			}
 		}
-		else
-		{
-			FinishAnim(PlayingSequence);
-		}
-		}
-
+		
 
 		// Loop while the UI is displayed
 		Params.AnimName = 'HL_LootLoop';
 		Params.Looping = true;
 		if( UnitPawn.GetAnimTreeController().CanPlayAnimation(Params.AnimName) )
 		{
-		UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
+			UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
 		}
 
 		// show the UI, and wait for it to finish before playing the slurp
@@ -257,15 +257,15 @@ Begin:
 		Params.PlayRate = GetNonCriticalAnimationSpeed();
 		if( UnitPawn.GetAnimTreeController().CanPlayAnimation(Params.AnimName) )
 		{
-		PlayingSequence = UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
-		if( Metadata.VisualizeActor.CustomTimeDilation < 1.0 )
-		{
-			Sleep(PlayingSequence.AnimSeq.SequenceLength * PlayingSequence.Rate * Metadata.VisualizeActor.CustomTimeDilation);
-		}
-		else
-		{
-			FinishAnim(PlayingSequence);
-		}
+			PlayingSequence = UnitPawn.GetAnimTreeController().PlayFullBodyDynamicAnim(Params);
+			if( Metadata.VisualizeActor.CustomTimeDilation < 1.0 )
+			{
+				Sleep(PlayingSequence.AnimSeq.SequenceLength * PlayingSequence.Rate * Metadata.VisualizeActor.CustomTimeDilation);
+			}
+			else
+			{
+				FinishAnim(PlayingSequence);
+			}
 		}
 		
 		Unit.UnitSpeak('LootCaptured');

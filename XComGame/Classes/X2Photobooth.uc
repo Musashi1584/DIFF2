@@ -29,13 +29,23 @@ enum Photobooth_AnimationFilterType
 	ePAFT_Memorial
 };
 
+enum Photobooth_ParticleEffectType
+{
+	ePPET_None,
+	ePPET_TemplarBladeRight,
+	ePPET_TemplarBladeLeft,
+	ePPET_TemplarShield
+};
+
 struct native AnimationPoses
 {
-	var localized string				AnimationDisplayName;
-	var name							AnimationName;
-	var float							AnimationOffset;
-	var Photobooth_AnimationFilterType	AnimType;
-	var bool							bShowTemplarShardBlades;
+	var localized string						AnimationDisplayName;
+	var name									AnimationName;
+	var float									AnimationOffset;
+	var Photobooth_AnimationFilterType			AnimType;
+	var array<Photobooth_ParticleEffectType>	ParticleEffectTypes;
+	var bool									bExcludeFromGroupShots;
+	var bool									bExcludeFromTemplar;
 };
 
 /* Lists of all animation poses set from the ini */
@@ -271,6 +281,7 @@ struct native PhotoboothAutoGenSettings
 	var name							HeadShotAnimName;
 
 	var bool							bChallengeMode;
+	var bool							bLadderMode;
 };
 
 var PhotoboothAutoGenSettings AutoGenSettings;
@@ -374,16 +385,37 @@ struct native DeferredReleasePawnInfo
 
 var array<DeferredReleasePawnInfo> DeferredReleasePawns;
 
-// Special particle systems and notifies for the Templar weapons.
+// Special particle systems and notifies for the Templar weapons (unused but xpack content expects it).
 var ParticleSystem      TemplarShardBladeFX_L;
 var ParticleSystem      TemplarShardBladeFX_R;
-var array<AnimNotify_StopParticleEffect> TemplarShardStopNotifies;
-var array<AnimNotify_PlayParticleEffect> TemplarShardPlayNotifies;
+
+struct native PhotoboothParticleEffects
+{
+	var string							PSTemplateName;
+	var name							SocketName;
+	var Photobooth_ParticleEffectType	ParticleEffectType;
+	var AnimNotify_StopParticleEffect	StopNotify;
+	var AnimNotify_PlayParticleEffect	PlayNotify;
+};
+
+var config array<PhotoboothParticleEffects> ParticleEffects;
 
 var X2Camera_Fixed FixedTacticalAutoGenCamera;
 
 var array<Vector> OriginalFormationPoints;
 var array<Vector> CurrentFormationPoints;
+
+struct native PoseFormationRestrictionInfo
+{
+	var name			AnimationName;
+	var float			AnimationOffset;
+	var name			FormationName;
+	var array<string>	LocationTags;
+};
+
+var config array<PoseFormationRestrictionInfo> PoseFormationRestrictions;
+
+var bool bFullStop;
 
 /******************************************/
 //		Callback Variables
@@ -415,6 +447,7 @@ cpptext
 /******************************************/
 
 static native function X2Photobooth GetPhotobooth();
+static native function bool FullStop();
 
 /******************************************/
 //		Cleanup Functions
@@ -435,11 +468,13 @@ function RemoveAllSoldierPawns()
 	}
 }
 
-function EndPhotobooth(bool bDestroyPawns)
+event EndPhotobooth(bool bDestroyPawns)
 {
 	local int i;
 	local MaterialInstanceConstant FilterMIC;
 	local LinearColor ParamValue;
+
+	if (FullStop()) return;
 
 	m_kPreviewPosterComponent.SetEnabled(false);
 	m_kFinalPosterComponent.SetEnabled(false);
@@ -456,6 +491,7 @@ function EndPhotobooth(bool bDestroyPawns)
 			{
 				m_arrUnits[i].ActorPawn.SetVisible(false);
 				m_arrUnits[i].ActorPawn = none;
+				m_arrUnits[i].delOnPawnCreated = none;
 			}
 		}
 
@@ -494,6 +530,8 @@ function EndPhotobooth(bool bDestroyPawns)
 
 function SetGameIndex(int GameIndex)
 {
+	if (FullStop()) return;
+
 	m_iGameIndex = GameIndex;
 }
 
@@ -505,11 +543,15 @@ native function UpdateAllSoldiers();
 
 function MoveFormation(PointInSpace inFormationPoint)
 {
+	if (FullStop()) return;
+
 	m_kFormationPIS = inFormationPoint;
 	m_bFormationNeedsUpdate = true;
 }
 function ChangeFormation(X2PropagandaPhotoTemplate inFormation)
 {
+	if (FullStop()) return;
+
 	m_kFormationTemplate = inFormation;
 	m_bFormationNeedsUpdate = true;
 }
@@ -543,6 +585,8 @@ function int SetPawnCreatedDelegate(delegate<OnPawnCreated> delOnPawnCreated)
 {
 	local int i, NumPawnsSet;
 
+	if (FullStop()) return 0;
+
 	NumPawnsSet = 0;
 	for (i = 0; i < m_arrUnits.Length; ++i)
 	{
@@ -560,6 +604,8 @@ function int SetSoldier(int LocationIndex, StateObjectReference SoldierRef, opti
 	local int IndexReplaced;
 	local int i;
 	
+	if (FullStop()) return -1;
+
 	IndexReplaced = -1;
 
 	if (LocationIndex >= m_arrUnits.Length)
@@ -595,6 +641,8 @@ function string GetSoldierName(int index)
 	local XComGameStateHistory History;
 	local XComGameState_Unit Unit;
 
+	if (FullStop()) return "";
+
 	History = `XCOMHISTORY;
 	Unit = XComGameState_Unit(History.GetGameStateForObjectID(m_arrUnits[index].UnitRef.ObjectID));
 
@@ -604,6 +652,11 @@ function string GetSoldierName(int index)
 function bool IsAutoGenHeadShot()
 {
 	return AutoGenSettings.CampaignID > -1 && AutoGenSettings.TextLayoutState == ePBTLS_HeadShot;
+}
+
+event bool IsAutoGenHeadShotOrCaptured()
+{
+	return AutoGenSettings.CampaignID > -1 && (AutoGenSettings.TextLayoutState == ePBTLS_HeadShot || AutoGenSettings.TextLayoutState == ePBTLS_CapturedSoldier);
 }
 
 native function SetSoldierAnim(int LocationIndex, Name AnimationName, float AnimationOffset);
@@ -626,6 +679,8 @@ function OnAsyncLoadCompleted(XComGameState_Unit Unit)
 {
 	local XComGameState_Unit UnitState;
 	local int i;
+
+	if (FullStop()) return;
 
 	for (i = 0; i < m_arrUnits.Length; ++i)
 	{
@@ -700,6 +755,8 @@ event ReleaseSoldierPawnDeferred(PoseSoldierData SoldierData)
 {
 	local DeferredReleasePawnInfo DRPawnInfo;
 
+	if (FullStop()) return;
+
 	if (SoldierData.ActorPawn != none)
 	{
 		// leaving this in commented out in case there's any temptation to do this again
@@ -744,15 +801,17 @@ event ResetWeapons(int LocationIndex)
 {
 	local PoseSoldierData SoldierData;
 	local Attachment Attach;
+	local array<Attachment> ToBeDeleted;
 	local array<Attachment> ToBeReset;
 	local XComWeapon Weapon;
 	local array<XComWeapon> WeaponsToShow;
 	local XComGameState_Item WeaponItemState;
 	local array<WeaponAttachment> arrWeaponAttachments;
-	local SkeletalMeshComponent UnitSkeletalMesh;
+	local SkeletalMeshComponent UnitSkeletalMesh, AttachSkeletalMesh;
 	local Object AttachObject;
 	local array<string> SplitAttachMeshName;
 	local int i;
+	local ParticleSystemComponent PSC;
 
 	SoldierData = m_arrUnits[LocationIndex];
 	if (SoldierData.ActorPawn != none)
@@ -763,6 +822,12 @@ event ResetWeapons(int LocationIndex)
 		{
 			if (UnitSkeletalMesh.Attachments[i].Component != none)
 			{
+				if (UnitSkeletalMesh.Attachments[i].Component.Outer.Name == 'Transient')
+				{
+					ToBeDeleted.AddItem(UnitSkeletalMesh.Attachments[i]);
+					continue;
+				}
+
 				Weapon = XComWeapon(UnitSkeletalMesh.Attachments[i].Component.Outer);
 				if (Weapon != none)
 				{
@@ -774,6 +839,20 @@ event ResetWeapons(int LocationIndex)
 					ToBeReset.AddItem(UnitSkeletalMesh.Attachments[i]);
 				}
 			}
+		}
+
+		foreach ToBeDeleted(Attach)
+		{
+			AttachSkeletalMesh = SkeletalMeshComponent(Attach.Component);
+			if (AttachSkeletalMesh != none)
+			{
+				foreach AttachSkeletalMesh.AttachedComponents(class'ParticleSystemComponent', PSC)
+				{
+					PSC.SetActive(false);
+				}
+			}
+			UnitSkeletalMesh.DetachComponent(Attach.Component);
+			Attach.Component = none;
 		}
 
 		// Need to detach all before we can start attaching to default sockets because we can't have more than one attachment per socket
@@ -859,75 +938,55 @@ event SetTemplarFocus(int LocationIndex)
 	}
 }
 
-function InitializeTemplarNotifies()
+function InitializeParticleNotifies()
 {
-	local AnimNotify_StopParticleEffect StopParticleNotify;
-	local AnimNotify_PlayParticleEffect PlayParticleNotify;
+	local int i;
 
-	StopParticleNotify = new(self) class'AnimNotify_StopParticleEffect';
-	StopParticleNotify.PSTemplate = TemplarShardBladeFX_L;
-	StopParticleNotify.SocketName = Name("FX_Shard_Blade_L");
-	StopParticleNotify.bImmediate = true;
+	for (i = 0; i < ParticleEffects.length; ++i)
+	{
+		ParticleEffects[i].StopNotify = new(self) class'AnimNotify_StopParticleEffect';
+		ParticleEffects[i].StopNotify.PSTemplate = ParticleSystem(DynamicLoadObject(ParticleEffects[i].PSTemplateName, class'ParticleSystem'));
+		ParticleEffects[i].StopNotify.SocketName = ParticleEffects[i].SocketName;
+		ParticleEffects[i].StopNotify.bImmediate = true;
 
-	TemplarShardStopNotifies.AddItem(StopParticleNotify);
-
-	StopParticleNotify = new(self) class'AnimNotify_StopParticleEffect';
-	StopParticleNotify.PSTemplate = TemplarShardBladeFX_R;
-	StopParticleNotify.SocketName = Name("FX_Shard_Blade_R");
-	StopParticleNotify.bImmediate = true;
-
-	TemplarShardStopNotifies.AddItem(StopParticleNotify);
-
-	PlayParticleNotify = new(self) class'AnimNotify_PlayParticleEffect';
-	PlayParticleNotify.PSTemplate = TemplarShardBladeFX_L;
-	PlayParticleNotify.SocketName = Name("FX_Shard_Blade_L");
-	PlayParticleNotify.bAttach = true;
-
-	TemplarShardPlayNotifies.AddItem(PlayParticleNotify);
-
-	PlayParticleNotify = new(self) class'AnimNotify_PlayParticleEffect';
-	PlayParticleNotify.PSTemplate = TemplarShardBladeFX_R;
-	PlayParticleNotify.SocketName = Name("FX_Shard_Blade_R");
-	PlayParticleNotify.bAttach = true;
-
-	TemplarShardPlayNotifies.AddItem(PlayParticleNotify);
+		ParticleEffects[i].PlayNotify = new(self) class'AnimNotify_PlayParticleEffect';
+		ParticleEffects[i].PlayNotify.PSTemplate = ParticleEffects[i].StopNotify.PSTemplate;
+		ParticleEffects[i].PlayNotify.SocketName = ParticleEffects[i].SocketName;
+		ParticleEffects[i].PlayNotify.bAttach = true;
+	}
 }
 
-event SetTemplarShardBlades(int LocationIndex)
+event SetParticleEffects(int LocationIndex)
 {
 	local PoseSoldierData SoldierData;
-	local XComGameState_Unit UnitState;
-	local AnimNotify_PlayParticleEffect PlayParticleNotify;
-	local AnimNotify_StopParticleEffect StopParticleNotify;
 	local AnimationPoses AnimPose;
+	local PhotoboothParticleEffects Effect;
+	local Photobooth_ParticleEffectType EffectType;
 
 	SoldierData = m_arrUnits[LocationIndex];
 	if (SoldierData.ActorPawn != none)
 	{
-		if (SoldierData.UnitRef.ObjectID > 0)
+		foreach ParticleEffects(Effect)
 		{
-			UnitState = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(SoldierData.UnitRef.ObjectID));
+			SoldierData.ActorPawn.Mesh.StopParticleEffect(Effect.StopNotify);
 		}
 
-		if (UnitState != none && UnitState.GetSoldierClassTemplateName() == 'Templar')
+		foreach m_arrAnimationPoses(AnimPose)
 		{
-			foreach TemplarShardStopNotifies(StopParticleNotify)
+			if (AnimPose.AnimationName == SoldierData.AnimationName && AnimPose.AnimationOffset == SoldierData.AnimationOffset)
 			{
-				SoldierData.ActorPawn.Mesh.StopParticleEffect(StopParticleNotify);
-			}
-
-			foreach m_arrAnimationPoses(AnimPose)
-			{
-				if (AnimPose.AnimType == ePAFT_Templar && AnimPose.AnimationName == SoldierData.AnimationName
-					&& AnimPose.AnimationOffset == SoldierData.AnimationOffset && AnimPose.bShowTemplarShardBlades)
+				foreach AnimPose.ParticleEffectTypes(EffectType)
 				{
-					foreach TemplarShardPlayNotifies(PlayParticleNotify)
+					foreach ParticleEffects(Effect)
 					{
-						SoldierData.ActorPawn.PlayParticleEffect(PlayParticleNotify);
+						if (Effect.ParticleEffectType == EffectType)
+						{
+							SoldierData.ActorPawn.PlayParticleEffect(Effect.PlayNotify);
+						}
 					}
-
-					break;
 				}
+
+				break;
 			}
 		}
 	}
@@ -976,7 +1035,7 @@ function SetUnitRenderChannels(XComUnitPawn Unit, StateObjectReference UnitRef)
 	local AnimationPoses CosmeticPawnPose;
 	local CustomAnimParams AnimParams;
 
-	RenderChannels.MainScene = true;
+	RenderChannels.MainScene = !IsAutoGenHeadShot() || !AutoGenSettings.bLadderMode;
 	RenderChannels.SecondaryScene = true;
 
 	Unit.UpdateMeshRenderChannels(RenderChannels);
@@ -1033,7 +1092,7 @@ event InitializeRenderData()
 	InitializeUI();
 	InitializeTextures();
 	InitializeCaptures();
-	InitializeTemplarNotifies();
+	InitializeParticleNotifies();
 
 	UserTextLayoutState = ePBTLS_NONE;
 }
@@ -1080,12 +1139,14 @@ native function GetFinalPosterSize(out int SizeX, out int SizeY);
 
 simulated function Tick(float DeltaTime)
 {
+	if (FullStop()) return;
+
 	if (m_kAutoGenCaptureState == eAGCS_Idle)
 	{
-	SetupCaptureBounds();
-	ResizeRenderTargets();
-	ResizeFinalRenderTarget(false);
-}
+		SetupCaptureBounds();
+		ResizeRenderTargets();
+		ResizeFinalRenderTarget(false);
+	}
 }
 
 function InitializeTextures()
@@ -1184,6 +1245,8 @@ function InitializeCaptures()
 
 function SetCameraPOV(TPOV inCameraPOV, optional bool bIgnorePreview = false)
 {
+	if (FullStop()) return;
+
 	if (inCameraPOV.FOV != m_kPreviewPosterComponent.FieldOfView)
 	{
 		m_kPreviewPosterComponent.SetCaptureParameters(
@@ -1305,6 +1368,8 @@ function SavePosterAndFinish()
 
 function OnPosterFinished(TextureRenderTarget2D RenderTarget)
 {
+	if (FullStop()) return;
+
 	m_kFinalPosterComponent.m_nRenders = 1;
 	m_kFinalPosterComponent.SetEnabled(false);
 
@@ -1321,6 +1386,8 @@ function OnPosterFinished(TextureRenderTarget2D RenderTarget)
 
 function CreatePoster(optional int FrameDelay, optional delegate<OnPosterCreated> inOnPosterCreated, optional Photobooth_TextLayoutState InUserTextLayoutState = ePBTLS_NONE)
 {
+	if (FullStop()) return;
+
 	m_kOnPosterCreated = inOnPosterCreated;
 	m_kFinalPosterComponent.FrameDelay = FrameDelay;
 	m_kFinalPosterComponent.OnCaptureFinished = OnPosterFinished;
@@ -1379,6 +1446,8 @@ function ConstructTextLayout()
 
 function SetCamLookAtNamedLocation()
 {
+	if (FullStop()) return;
+
 	if (m_backgroundPoster != none)
 	{
 		m_backgroundPoster.SetCamLookAtNamedLocation();
@@ -1446,6 +1515,8 @@ function InitializePosterStrings()
 function SetBackgroundTexture(string BackgroundDisplayName)
 {
 	local int BackgroundIndex;
+
+	if (FullStop()) return;
 
 	for (BackgroundIndex = 0; BackgroundIndex < m_arrBackgroundOptions.Length; ++BackgroundIndex)
 	{
@@ -1539,6 +1610,8 @@ function SetFirstPassFilter(int FilterIndex)
 	local MaterialInstanceConstant FilterMIC;
 	local LinearColor ParamValue;
 
+	if (FullStop()) return;
+
 	if (FilterIndex >= m_arrFirstPassFilterOptions.Length)
 	{
 		m_kPhotoboothEffect.FirstPassFilterMI = none;
@@ -1574,6 +1647,8 @@ function SetFirstPassFilter(int FilterIndex)
 
 function SetSecondPassFilter(int FilterIndex)
 {
+	if (FullStop()) return;
+
 	if (FilterIndex >= m_arrSecondPassFilterOptions.Length)
 	{
 		m_kPhotoboothEffect.SecondPassFilterMI = none;
@@ -1591,6 +1666,8 @@ function SetSecondPassFilter(int FilterIndex)
 
 function HidePosterElements(bool bHide)
 {
+	if (FullStop()) return;
+
 	if (m_kPhotoboothEffect != none)
 	{
 		m_kPhotoboothEffect.bShowInGame = !bHide;
@@ -1600,6 +1677,8 @@ function HidePosterElements(bool bHide)
 
 function HideEntirePoster(bool bHide)
 {
+	if (FullStop()) return;
+
 	if (m_kPhotoboothShowEffect != none)
 	{
 		m_kPhotoboothShowEffect.bShowInGame = !bHide;
@@ -1686,6 +1765,8 @@ function DisablePostProcess()
 
 function SetLayoutIndex(int inLayoutIndex)
 {
+	if (FullStop()) return;
+
 	if (inLayoutIndex < 0 || inLayoutIndex >= m_aTextLayouts.Length)
 		return;
 
@@ -1697,6 +1778,8 @@ function SetTextLayoutByType(TextLayoutType InLayoutType)
 {
 	local int i;
 	local array<X2PropagandaTextLayoutTemplate> MatchingTextLayouts;
+
+	if (FullStop()) return;
 
 	for (i = 0; i < m_aTextLayouts.Length; ++i)
 	{
@@ -1744,6 +1827,8 @@ function SetTextLayoutByNumOfTextBoxes(int InNumTextBoxes)
 
 function SetTextBoxString(int Index, string textString)
 {
+	if (FullStop()) return;
+
 	//m_bChangedDefaultPosterStrings[Index] = true;
 	m_PosterStrings[Index] = textString;
 	m_backgroundPoster.mc.FunctionString("posterSetText"$Index + 1, textString);
@@ -1751,6 +1836,8 @@ function SetTextBoxString(int Index, string textString)
 
 function SetTextBoxFont(int Index, string textFont)
 {
+	if (FullStop()) return;
+
 	//m_bChangedDefaultPosterStrings[Index] = true;
 	m_PosterFont[Index] = textFont;
 	m_backgroundPoster.mc.FunctionString("SetTextBoxFont"$Index + 1, textFont);
@@ -1765,6 +1852,8 @@ function SetFontSize(int Index, int size)
 
 function SetTextBoxColor(int Index, int textColor)
 {
+	if (FullStop()) return;
+
 	//m_bChangedDefaultPosterStrings[Index] = true;
 	m_PosterStringColors[Index] = textColor;
 	m_backgroundPoster.mc.FunctionString("SetTextBoxFontColor"$Index + 1, m_FontColors[textColor]);
@@ -1774,6 +1863,8 @@ function SetTextBoxColor(int Index, int textColor)
 
 function SetIcon(int Index, string ImagePath)
 {
+	if (FullStop()) return;
+
 	m_backgroundPoster.mc.FunctionString("posterSetIcon"$Index + 1, ImagePath);
 }
 
@@ -1797,6 +1888,8 @@ function SetGradientColorIndex1(int InColorIndex)
 {
 	local XComLinearColorPalette Palette;
 
+	if (FullStop()) return;
+
 	Palette = `CONTENT.GetColorPalette(ePalette_FontColors);
 
 	m_iGradientColor1Index = InColorIndex;
@@ -1812,6 +1905,8 @@ function SetGradientColorIndex2(int InColorIndex)
 {
 	local XComLinearColorPalette Palette;
 
+	if (FullStop()) return;
+
 	Palette = `CONTENT.GetColorPalette(ePalette_FontColors);
 	m_iGradientColor2Index = InColorIndex;
 	if (m_kPhotoboothEffect != none)
@@ -1824,6 +1919,8 @@ function SetGradientColorIndex2(int InColorIndex)
 
 function SetBackgroundColorOverride(bool InOverride)
 {
+	if (FullStop()) return;
+
 	if (m_kPhotoboothEffect != none)
 	{
 		m_kPhotoboothEffect.bOverrideBackgroundTextureColor = InOverride;
@@ -1842,6 +1939,8 @@ function GetPosterCorners(out Vector2D TopLeft, out Vector2D BottomRight)
 	local XComLocalPlayer localPlayer;
 	local float screenSizeX, screenSizeY;
 
+	if (FullStop()) return;
+
 	pc = GetALocalPlayerController();
 	localPlayer = XComLocalPlayer(pc.Player);
 	if (localPlayer != none)
@@ -1859,6 +1958,9 @@ function GetPosterCorners(out Vector2D TopLeft, out Vector2D BottomRight)
 function int GetFormations(out array<X2PropagandaPhotoTemplate> outFormations)
 {
 	local int i;
+
+	if (FullStop()) return -1;
+
 	outFormations = m_arrFormations;
 	for (i = 0; i < m_arrFormations.length; ++i)
 	{
@@ -1881,6 +1983,8 @@ private function XComGameState_Unit GetUnit(StateObjectReference UnitRef)
 
 function int GetNumSoldierSlots()
 {
+	if (FullStop()) return 0;
+
 	return m_kFormationTemplate.NumSoldiers;
 }
 
@@ -1902,6 +2006,8 @@ function int GetPossibleSoldiers(int LocationIndex, array<StateObjectReference> 
 	local int CurrentSoldierIndex;
 	local int AddIndex;
 
+	if (FullStop()) return -1;
+
 	outSoldiers.Length = 0;
 	CurrentSoldierIndex = -1;
 
@@ -1919,14 +2025,44 @@ function int GetPossibleSoldiers(int LocationIndex, array<StateObjectReference> 
 	return CurrentSoldierIndex;
 }
 
-event int GetAnimations(int LocationIndex, out array<AnimationPoses> outAnimations, optional bool bExcludeDuoPoses = false, optional bool bMemorialOnly = false)
+function bool RestrictedFromFormation(int LocationIndex, AnimationPoses AnimPose)
 {
-	local int i;
+	local PoseFormationRestrictionInfo Restriction;
+	local string LocTag;
+
+	if (m_kFormationTemplate != none && m_kFormationTemplate.NumSoldiers > LocationIndex)
+	{
+		foreach PoseFormationRestrictions(Restriction)
+		{
+			if (Restriction.AnimationName == AnimPose.AnimationName
+				&& Restriction.AnimationOffset == AnimPose.AnimationOffset
+				&& Restriction.FormationName == m_kFormationTemplate.DataName)
+			{
+				foreach Restriction.LocationTags(LocTag)
+				{
+					if (LocTag == m_kFormationTemplate.LocationTags[LocationIndex])
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+event int GetAnimations(int LocationIndex, out array<AnimationPoses> outAnimations, optional bool bExcludeDuoPoses = false, optional bool bMemorialOnly = false, optional bool bExcludeNonGroupShotPoses = false)
+{
+	local AnimationPoses AnimPose;
 	local int CurrentAnimationIndex;
 	local int AddIndex;
 	local StateObjectReference Soldier;
 	local XComGameState_Unit UnitState;
-	local bool bAutoGenerating, bTemplarFilter, bSpecialistFilter, bSharpShooterFilter;
+	local bool bAutoGenerating, bTemplarFilter;
+	local Photobooth_AnimationFilterType ClassFilter;
+
+	if (FullStop()) return -1;
 
 	outAnimations.Length = 0;
 	CurrentAnimationIndex = -1;
@@ -1941,15 +2077,16 @@ event int GetAnimations(int LocationIndex, out array<AnimationPoses> outAnimatio
 
 		if (UnitState != none && UnitState.GetSoldierClassTemplateName() == 'Spark')
 		{
-			for (i = 0; i < m_arrAnimationSparkPoses.Length; ++i)
+			foreach m_arrAnimationSparkPoses(AnimPose)
 			{
-				if ((!bMemorialOnly || m_arrAnimationSparkPoses[i].AnimType == ePAFT_Memorial) // Filter out all non-memorial poses
-					&& m_arrUnits[LocationIndex].ActorPawn.GetAnimTreeController().CanPlayAnimation(m_arrAnimationSparkPoses[i].AnimationName))
+				if ((!bMemorialOnly || AnimPose.AnimType == ePAFT_Memorial) // Filter out all non-memorial poses
+					&& !RestrictedFromFormation(LocationIndex, AnimPose)
+					&& m_arrUnits[LocationIndex].ActorPawn.GetAnimTreeController().CanPlayAnimation(AnimPose.AnimationName))
 				{
-					AddIndex = outAnimations.AddItem(m_arrAnimationSparkPoses[i]);
+					AddIndex = outAnimations.AddItem(AnimPose);
 
-					if (m_arrAnimationSparkPoses[i].AnimationName == m_arrUnits[LocationIndex].AnimationName
-						&& m_arrAnimationSparkPoses[i].AnimationOffset == m_arrUnits[LocationIndex].AnimationOffset)
+					if (AnimPose.AnimationName == m_arrUnits[LocationIndex].AnimationName
+						&& AnimPose.AnimationOffset == m_arrUnits[LocationIndex].AnimationOffset)
 					{
 						CurrentAnimationIndex = AddIndex;
 					}
@@ -1960,25 +2097,59 @@ event int GetAnimations(int LocationIndex, out array<AnimationPoses> outAnimatio
 		{
 			bAutoGenerating = AutoGenSettings.CampaignID > -1;
 			bTemplarFilter = UnitState.GetSoldierClassTemplateName() == 'Templar';
-			bSpecialistFilter = UnitState.GetSoldierClassTemplateName() == 'Specialist';
-			bSharpShooterFilter = UnitState.GetSoldierClassTemplateName() == 'Sharpshooter';
 			bExcludeDuoPoses = bExcludeDuoPoses || CurrentFormationIsSolo();
+			bExcludeNonGroupShotPoses = bExcludeNonGroupShotPoses && GetNumSoldierSlots() > 2;
 
-			for (i = 0; i < m_arrAnimationPoses.Length; ++i)
+			ClassFilter = ePAFT_None;
+			switch (UnitState.GetSoldierClassTemplateName())
 			{
-				if (m_arrAnimationPoses[i].AnimType != ePAFT_Captured
-					&& (!bAutoGenerating || m_arrAnimationPoses[i].AnimType != ePAFT_TopGun) // Filter out top gun pose in generated photos
-					&& (!bTemplarFilter || m_arrAnimationPoses[i].AnimType != ePAFT_SoldierRifle) // Filter out rifle poses for Templar in tactical
-					&& (bSpecialistFilter || m_arrAnimationPoses[i].AnimType != ePAFT_Specialist) // Filter out Specialist poses for non-specialists
-					&& (bSharpShooterFilter || m_arrAnimationPoses[i].AnimType != ePAFT_Sharpshooter) // Filter out Sharpshooter poses for non-sharpshooters
-					&& (!bExcludeDuoPoses || (m_arrAnimationPoses[i].AnimType != ePAFT_DuoPose1 && m_arrAnimationPoses[i].AnimType != ePAFT_DuoPose2)) // Filter out Duo Poses
-					&& (!bMemorialOnly || m_arrAnimationPoses[i].AnimType == ePAFT_Memorial) // Filter out all non-memorial poses
-					&& m_arrUnits[LocationIndex].ActorPawn.GetAnimTreeController().CanPlayAnimation(m_arrAnimationPoses[i].AnimationName))
-				{
-					AddIndex = outAnimations.AddItem(m_arrAnimationPoses[i]);
+			case 'Grenadier':
+				ClassFilter = ePAFT_Grenadier;
+				break;
+			case 'CentralOfficer':
+			case 'NestCentral':
+			case 'LadderCentral':
+			case 'Ranger':
+				ClassFilter = ePAFT_Ranger;
+				break;
+			case 'Sharpshooter':
+				ClassFilter = ePAFT_Sharpshooter;
+				break;
+			case 'PsiOperative':
+				ClassFilter = ePAFT_PsiOperative;
+				break;
+			case 'ChiefEngineer':
+			case 'TLE_ChiefEngineer':
+			case 'Specialist':
+				ClassFilter = ePAFT_Specialist;
+				break;
+			case 'Skirmisher':
+				ClassFilter = ePAFT_Skirmisher;
+				break;
+			case 'Templar':
+				ClassFilter = ePAFT_Templar;
+				break;
+			case 'Reaper':
+				ClassFilter = ePAFT_Reaper;
+				break;
+			}
 
-					if (m_arrAnimationPoses[i].AnimationName == m_arrUnits[LocationIndex].AnimationName
-						&& m_arrAnimationPoses[i].AnimationOffset == m_arrUnits[LocationIndex].AnimationOffset)
+			foreach m_arrAnimationPoses(AnimPose)
+			{
+				if (AnimPose.AnimType != ePAFT_Captured
+					&& (!bAutoGenerating || AnimPose.AnimType != ePAFT_TopGun) // Filter out top gun pose in generated photos
+					&& (!bTemplarFilter || (AnimPose.AnimType != ePAFT_SoldierRifle && !AnimPose.bExcludeFromTemplar)) // Filter out rifle poses for Templar in tactical, and new TLE duo poses.
+					&& (AnimPose.AnimType <= ePAFT_DuoPose2 || AnimPose.AnimType >= ePAFT_Memorial || AnimPose.AnimType == ClassFilter) // Filter out non class matching poses
+					&& (!bExcludeDuoPoses || (AnimPose.AnimType != ePAFT_DuoPose1 && AnimPose.AnimType != ePAFT_DuoPose2)) // Filter out Duo Poses
+					&& (!bMemorialOnly || AnimPose.AnimType == ePAFT_Memorial) // Filter out all non-memorial poses
+					&& !RestrictedFromFormation(LocationIndex, AnimPose) // Always filter out specific poses from specific formation positions.
+					&& (!bExcludeNonGroupShotPoses || !AnimPose.bExcludeFromGroupShots) // Filter out marked poses from mob, line and wedge formations. This is different from RestrictedFromFormation above as we don't exclude these poses from the ui drop downs.
+					&& m_arrUnits[LocationIndex].ActorPawn.GetAnimTreeController().CanPlayAnimation(AnimPose.AnimationName))
+				{
+					AddIndex = outAnimations.AddItem(AnimPose);
+
+					if (AnimPose.AnimationName == m_arrUnits[LocationIndex].AnimationName
+						&& AnimPose.AnimationOffset == m_arrUnits[LocationIndex].AnimationOffset)
 					{
 						CurrentAnimationIndex = AddIndex;
 					}
@@ -2016,6 +2187,8 @@ function bool GetCapturedAnimation(int LocationIndex, out AnimationPoses OutAnim
 
 function bool PosterElementsHidden()
 {
+	if (FullStop()) return false;
+
 	if (m_kPhotoboothEffect != none)
 	{
 		return !m_kPhotoboothEffect.bShowInGame;
@@ -2027,6 +2200,8 @@ function bool PosterElementsHidden()
 function int GetBackgrounds(out array<BackgroundPosterOptions> outBackgrounds, Photobooth_TeamUsage BackgroundTeam)
 {
 	local int outIndex, i;
+
+	if (FullStop()) return -1;
 
 	outIndex = -1;
 	outBackgrounds.Length = 0;
@@ -2055,6 +2230,8 @@ function int GetFirstPassFilters(out array<FilterPosterOptions> outFilters)
 {
 	local int i;
 
+	if (FullStop()) return -1;
+
 	outFilters = m_arrFirstPassFilterOptions;
 
 	if (m_kPhotoboothEffect != none)
@@ -2073,6 +2250,8 @@ function int GetSecondPassFilters(out array<FilterPosterOptions> outFilters)
 {
 	local int i;
 
+	if (FullStop()) return -1;
+
 	outFilters = m_arrSecondPassFilterOptions;
 
 	if (m_kPhotoboothEffect != none)
@@ -2089,12 +2268,17 @@ function int GetSecondPassFilters(out array<FilterPosterOptions> outFilters)
 
 function GetLayouts(out array<X2PropagandaTextLayoutTemplate> outLayouts)
 {
+	if (FullStop()) return;
+
 	outLayouts = m_aTextLayouts;
 }
 
 function GetFonts(out array<FontOptions> outFonts, optional bool bCapturedOnly = false)
 {
 	local int i;
+
+	if (FullStop()) return;
+
 	outFonts.Remove(0, outFonts.Length);
 
 	for (i = 0; i < m_arrFontOptions.Length; i++)
@@ -2110,6 +2294,8 @@ function GetFonts(out array<FontOptions> outFonts, optional bool bCapturedOnly =
 
 function int GetLayoutIndex()
 {
+	if (FullStop()) return -1;
+
 	return m_currentTextLayoutTemplateIndex;
 }
 
@@ -2121,6 +2307,8 @@ function int GetNumTextBoxes()
 function string GetTextBoxString(int Index)
 {
 	local string EmptyString;
+
+	if (FullStop()) return "";
 
 	EmptyString = "";
 
@@ -2145,6 +2333,8 @@ function int GetTextFontIndex(int Index)
 
 function int GetMaxStringLength(int Index)
 {
+	if (FullStop()) return 0;
+
 	if (Index < 0 || Index >= m_currentTextLayoutTemplate.MaxChars.Length)
 		return 0;
 
@@ -2160,6 +2350,8 @@ function GetCameraPresets(out array<PhotoboothCameraPreset> outCameraPresets, op
 {
 	local int i;
 
+	if (FullStop()) return;
+
 	for (i = 0; i < m_arrCameraPresets.Length; ++i)
 	{
 		if ((m_arrCameraPresets[i].AllowableFormations.Length == 0
@@ -2171,6 +2363,25 @@ function GetCameraPresets(out array<PhotoboothCameraPreset> outCameraPresets, op
 
 native function bool GetCameraPOVForPreset(PhotoboothCameraPreset CameraPreset, out PhotoboothCameraSettings outCameraPOV, optional bool bUpdateViewDistance = true);
 native function UpdateViewDistance(out PhotoboothCameraSettings outCameraPOV);
+
+event Box GetExtraBounds(SkeletalMeshComponent SkeletalMC)
+{
+	local StaticMeshComponent StaticMC;
+	local Box BBox;
+
+	BBox.IsValid = 0;
+
+	foreach SkeletalMC.AttachedComponentsOnBone(class'StaticMeshComponent', StaticMC, name("CIN_Root"))
+	{
+		// should only ever be one.
+		BBox.Min = StaticMC.Bounds.Origin - StaticMC.Bounds.BoxExtent;
+		BBox.Max = StaticMC.Bounds.Origin + StaticMC.Bounds.BoxExtent;
+		BBox.IsValid = 1;
+		break;
+	}
+
+	return BBox;
+}
 
 /******************************************/
 //		AutoGen Functions
@@ -2203,6 +2414,8 @@ function int GetDuoAnimIndex(int LocationIndex, int DuoAnimIndex, array<Animatio
 	local XComGameState_Unit UnitState;
 	local int i;
 	local array<int> DuoIndices;
+
+	if (FullStop()) return 0;
 
 	Soldier = m_arrUnits[LocationIndex].UnitRef;
 	if (Soldier.ObjectID > 0)
@@ -2337,7 +2550,7 @@ function AutoGenSetAnims()
 		}
 		else
 		{
-			GetAnimations(i, arrAnimations, true, AutoGenSettings.TextLayoutState == ePBTLS_DeadSoldier);
+			GetAnimations(i, arrAnimations, true, AutoGenSettings.TextLayoutState == ePBTLS_DeadSoldier, true);
 			if (arrAnimations.Length > 0)
 			{
 				RandAnim = `SYNC_RAND(arrAnimations.length);
@@ -2397,6 +2610,8 @@ function int GetTotalActivePawns()
 {
 	local int TotalPawns, i;
 
+	if (FullStop()) return 0;
+
 	TotalPawns = 0;
 
 	for (i = 0; i < m_arrUnits.Length; ++i)
@@ -2425,6 +2640,8 @@ function SetAutoTextStrings(Photobooth_AutoTextUsage Usage, optional Photobooth_
 	local AutoGeneratedLines LinesStruct;
 	local bool bAutoGenDeadSoldier, bExcludeNickNames, bCanChooseOperation, bCapturedOnlyFonts;
 	local Photobooth_TextLayoutState generatedTextLayoutState;
+
+	if (FullStop()) return;
 
 	Unit1 = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(GetCurrentSoldier(0).ObjectID));
 	Unit2 = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(GetCurrentSoldier(1).ObjectID));
@@ -2848,6 +3065,9 @@ function SetAutoTextStrings(Photobooth_AutoTextUsage Usage, optional Photobooth_
 function FillDefaultText(out PhotoboothDefaultSettings defaultSettings)
 {
 	local int i;
+
+	if (FullStop()) return;
+
 	for (i = 0; i < GetNumTextBoxes(); i++)
 	{
 		defaultSettings.GeneratedText.AddItem(GetTextBoxString(i));
@@ -2859,6 +3079,8 @@ function FillDefaultText(out PhotoboothDefaultSettings defaultSettings)
 
 function AutoGenTextLayout()
 {
+	if (FullStop()) return;
+
 	if (m_kFormationTemplate.NumSoldiers == 1)
 	{
 		SetAutoTextStrings(ePBAT_SOLO);
@@ -2879,11 +3101,29 @@ function AutoGenChallengeModeTextLayout()
 	local array<string> GeneratedText;
 	local int i;
 	local array<FontOptions> arrFontOptions;
+	local XComGameState_LadderProgress LadderData;
 
-	ChallengeModeManager = XComEngine(Class'GameEngine'.static.GetEngine()).ChallengeModeManager;
+	if (AutoGenSettings.bChallengeMode)
+	{
+		ChallengeModeManager = XComEngine(Class'GameEngine'.static.GetEngine()).ChallengeModeManager;
 
-	GeneratedText.AddItem(m_ChallengeModeStr);
-	GeneratedText.AddItem(m_ChallengeModeScoreLabel @ string(ChallengeModeManager.GetTotalScore()));
+		GeneratedText.AddItem(m_ChallengeModeStr);
+		GeneratedText.AddItem(m_ChallengeModeScoreLabel @ string(ChallengeModeManager.GetTotalScore()));
+	}
+	else if (AutoGenSettings.bLadderMode)
+	{
+		LadderData = XComGameState_LadderProgress( `XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress' ) );
+
+		GeneratedText.AddItem(m_ChallengeModeScoreLabel @ string(LadderData.CumulativeScore));
+		if (LadderData.LadderIndex < 10)
+		{
+			GeneratedText.AddItem(LadderData.NarrativeLadderNames[LadderData.LadderIndex]);//Mission Name
+		}
+		else
+		{
+			GeneratedText.AddItem(LadderData.LadderName);//Mission Name
+		}
+	}
 
 	SetTextLayoutByNumOfTextBoxes(2);
 
@@ -2904,8 +3144,10 @@ function AutoGenChallengeModeTextLayout()
 	}
 }
 
-function InterruptAutoGen()
+event InterruptAutoGen()
 {
+	if (FullStop()) return;
+
 	m_kFinalPosterComponent.SetEnabled(false);
 	m_kPreviewPosterComponent.SetEnabled(true);
 	AutoGenSettings.CampaignID = -1;
@@ -2929,6 +3171,8 @@ function InterruptAutoGen()
 
 function bool CanTakeAutoPhoto(bool bValidAutoGenSettings)
 {
+	if (FullStop()) return false;
+
 	return `ScreenStack.IsNotInStack(class'UIArmory_Photobooth', false) &&
 		m_kAutoGenCaptureState == eAGCS_Idle &&
 		(bValidAutoGenSettings ? AutoGenSettings.CampaignID > -1 : AutoGenSettings.CampaignID <= -1);
@@ -2936,12 +3180,16 @@ function bool CanTakeAutoPhoto(bool bValidAutoGenSettings)
 
 function SetAutoGenSettings(PhotoboothAutoGenSettings InSettings, optional delegate<OnPosterCreated> inOnPosterCreated)
 {
+	if (FullStop()) return;
+
 	AutoGenSettings = InSettings;
 	m_kOnPosterCreated = inOnPosterCreated;
 }
 
 function HidePreview()
 {
+	if (FullStop()) return;
+
 	m_kPreviewPosterComponent.SetEnabled(false);
 	if (m_kPhotoboothShowEffect != none)
 	{
@@ -2951,12 +3199,16 @@ function HidePreview()
 
 function bool DeferPhase1()
 {
+	if (FullStop()) return true;
+
 	return m_kFormationBlueprint == none || m_bFormationNeedsUpdate || m_bFormationLoading;
 }
 
 function bool DeferPhase2()
 {
 	local int i, FormationSoldierCount;
+
+	if (FullStop()) return true;
 
 	FormationSoldierCount = 0;
 	if (m_kFormationTemplate != none)
@@ -2978,6 +3230,8 @@ function bool DeferPhase2()
 function bool DeferPhase3()
 {
 	local int i;
+
+	if (FullStop()) return true;
 
 	if (!m_backgroundPoster.bIsInited)
 	{
@@ -3077,16 +3331,25 @@ event AutoGenerate()
 
 		AutoGenSetSoldiers();
 
-		if (AutoGenSettings.bChallengeMode)
+		if (AutoGenSettings.TextLayoutState != ePBTLS_HeadShot)
 		{
-			AutoGenChallengeModeTextLayout();
-		}
-		else if (AutoGenSettings.TextLayoutState != ePBTLS_HeadShot)
-		{
-			AutoGenTextLayout();
+			if (AutoGenSettings.bChallengeMode || AutoGenSettings.bLadderMode)
+			{
+				AutoGenChallengeModeTextLayout();
+			}
+			else
+			{
+				AutoGenTextLayout();
+			}
 		}
 
 		SetBackgroundTexture(AutoGenSettings.BackgroundDisplayName);
+
+		if (AutoGenSettings.TextLayoutState == ePBTLS_HeadShot && AutoGenSettings.bLadderMode)
+		{
+			m_kFinalPosterComponent.RenderChannels.MainScene = false;
+			m_kFinalPosterComponent.bEnableFog = false;
+		}
 
 		m_kAutoGenCaptureState = eAGCS_TickPhase2;
 	}
@@ -3145,7 +3408,8 @@ event AutoGenerate()
 
 			AutoGenSettings.CameraPOV.Location = CameraSettings.RotationPoint - CameraSettings.ViewDistance * vector(CameraSettings.Rotation);
 
-			if (XComTacticalController(GetALocalPlayerController()) != none)
+			if (!(AutoGenSettings.TextLayoutState == ePBTLS_HeadShot && AutoGenSettings.bLadderMode)
+				&& XComTacticalController(GetALocalPlayerController()) != none)
 			{
 				FixedTacticalAutoGenCamera = new class'X2Camera_Fixed';
 				FixedTacticalAutoGenCamera.SetCameraView(AutoGenSettings.CameraPOV);
@@ -3230,4 +3494,6 @@ defaultproperties
 
 	m_fMaxXPercentage = 0.37
 	m_fMaxYPercentage = 1.0
+
+	bFullStop = false
 }

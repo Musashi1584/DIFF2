@@ -98,6 +98,9 @@ var() bool							m_bSilenceNewbieMoments;
 var() bool							bIsTacticalQuickLaunch; //Flag set to true if this is a tactical battle that was started via TQL
 var() TDateTime						LocalTime;			    //The local time at the mission site
 
+var name DefaultLeaderListOverride;
+var name DefaultFollowerListOverride;
+
 //RAM - these are legacy from EU/EW
 var() string						m_strMapCommand;        // Name of map
 
@@ -699,7 +702,7 @@ function EventListenerReturn ActivateChosenAlertOnUnitDeath(Object EventData, Ob
 	// Update for TTP 17473 -  do not activate the Chosen unless the enemy is unconcealed.
 	if (PlayerState.IsAnySquadMemberRevealed())
 	{
-	InternalActivateChosenAlert();
+		InternalActivateChosenAlert();
 	}
 
 	return ELR_NoInterrupt;
@@ -1414,6 +1417,7 @@ function BuildVisualizationForFirstSightingOfEnemyGroup(XComGameState VisualizeG
 	local XComGameStateContext Context;
 	local bool bFirstSightingOfUnitEver;
 	local TTile TileLocation;
+	local XComGameState_LadderProgress LadderData;
 
 	Context = VisualizeGameState.GetContext();
 	History = `XCOMHISTORY;
@@ -1452,6 +1456,8 @@ function BuildVisualizationForFirstSightingOfEnemyGroup(XComGameState VisualizeG
 		UpdateUIAction = X2Action_UpdateUI(class'X2Action_UpdateUI'.static.AddToVisualizationTree(ActionMetadata, Context, false, ActionMetadata.LastActionAdded));
 		UpdateUIAction.UpdateType = EUIUT_Pathing_Concealment;
 
+		LadderData = XComGameState_LadderProgress( History.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ) );
+
 		// if there is an HQ in this game state, it means that this unit is being shown for the first time, so we need to perform that intro narrative
 		GroupLeaderUnitState = XComGameState_Unit(History.GetGameStateForObjectID(AIGroupState.m_arrMembers[0].ObjectID));
 		if( XComHQ != None && GroupLeaderUnitState != None && GroupLeaderUnitState.IsAlive() )
@@ -1462,7 +1468,13 @@ function BuildVisualizationForFirstSightingOfEnemyGroup(XComGameState VisualizeG
 			MissionState = XComGameState_MissionSite(History.GetGameStateForObjectID(XComHQ.MissionRef.ObjectID));
 			if( MissionState == none || !MissionState.GetMissionSource().bBlockFirstEncounterVO )
 			{
-				EffectAction.NarrativeToPlay = CharacterTemplate.SightedNarrativeMoments.Length > 0 ? CharacterTemplate.SightedNarrativeMoments[0] : none;
+				if (LadderData != none)
+				{
+					if (CharacterTemplate.SightedNarrativeMoments.Length > 1)
+						EffectAction.NarrativeToPlay = CharacterTemplate.SightedNarrativeMoments[1];
+				}
+				else if (CharacterTemplate.SightedNarrativeMoments.Length > 0)
+					EffectAction.NarrativeToPlay = CharacterTemplate.SightedNarrativeMoments[0];
 			}
 		}
 		else if( !bPlayedVO && !bFirstSightingOfUnitEver && !GroupLeaderUnitState.GetMyTemplate().bIsTurret )
@@ -1505,8 +1517,16 @@ function BuildVisualizationForFirstSightingOfEnemyGroup(XComGameState VisualizeG
 		class'X2Action_BlockAbilityActivation'.static.AddToVisualizationTree(ActionMetadata, Context, false, ActionMetadata.LastActionAdded);
 
 		// pause a few seconds
-		DelayAction = X2Action_Delay(class'X2Action_Delay'.static.AddToVisualizationTree(ActionMetadata, Context, false, ActionMetadata.LastActionAdded));
-		DelayAction.Duration = bFirstSightingOfUnitEver ? 5.0 : 1.0;
+		ActionMetadata.StateObject_OldState = none;
+		ActionMetadata.StateObject_NewState = none;
+		ActionMetadata.VisualizeActor = none;
+
+		// ignore when in challenge, ladder, etc. mode
+		if (!class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
+		{
+			DelayAction = X2Action_Delay(class'X2Action_Delay'.static.AddToVisualizationTree(ActionMetadata, Context, false, ActionMetadata.LastActionAdded));
+			DelayAction.Duration = bFirstSightingOfUnitEver ? 5.0 : 1.0;
+		}
 	}
 }
 

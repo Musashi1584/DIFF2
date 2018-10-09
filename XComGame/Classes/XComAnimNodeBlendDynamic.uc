@@ -17,6 +17,7 @@ struct native PlayingChild
 	var float					CurrentBlendTime;
 	var float					TotalBlendTime;
 	var float					StartingWeight;
+	var int						UseFixupIndex;
 	var init Array<FixupInfo>	Fixups;
 };
 
@@ -74,7 +75,6 @@ var private bool ComputedFixupRootMotion;
 var private BoneAtom FixedUpRootMotionDelta;
 var private BoneAtom EstimatedCurrentAtom;
 var private bool Additive;
-var private int UseFixupIndex;
 var private BoneAtom CurrentStartingAtom;
 
 native function AnimNodeSequence PlayDynamicAnim(out CustomAnimParams Params);
@@ -109,5 +109,4 @@ defaultproperties
 	bFixNumChildren = TRUE
 	CategoryDesc = "Firaxis"
 	Additive = FALSE
-	UseFixupIndex = -1;
 }

@@ -70,6 +70,21 @@ function PostLoadData()
 			Movie.SetMouseActive(Data.IsMouseActive());
 		}
 	}
+
+	if (Data.m_iSoundtrackChoice == -1)
+	{
+		Data.m_iSoundtrackChoice = 2;
+		`SOUNDMGR.SetState('SoundtrackGame', 'XCom2'); // default to XCom2
+	}
+	else
+	{
+		switch (Data.m_iSoundtrackChoice)
+		{
+		case 0: `SOUNDMGR.SetState('SoundtrackGame', 'XComUFO'); break;
+		case 1: `SOUNDMGR.SetState('SoundtrackGame', 'XCom1'); break;
+		case 2: `SOUNDMGR.SetState('SoundtrackGame', 'XCom2'); break;
+		}
+	}
 }
 
 //******************************************************************************************

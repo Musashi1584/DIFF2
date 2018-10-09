@@ -133,7 +133,7 @@ simulated function OnInit()
 	else
 	{
 		if( bIsFocused )
-		UpdateNavHelp();
+			UpdateNavHelp();
 	}
 
 	if( !bResistanceReport )

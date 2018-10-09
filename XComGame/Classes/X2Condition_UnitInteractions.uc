@@ -53,19 +53,19 @@ static function array<XComInteractPoint> GetUnitInteractionPoints(XComGameState_
 	for (i = 0; i < UnitLocations.Length; ++i)
 	{
 		UnitLocation = World.GetPositionFromTileCoordinates(UnitLocations[i]);
-	World.GetInteractionPoints(UnitLocation, 8.0f, 90.0f, InteractionPoints);
+		World.GetInteractionPoints(UnitLocation, 8.0f, 90.0f, InteractionPoints);
 	}
 
 	// remove any points that we can't interact with
-	for(Index = 0; Index < InteractionPoints.Length; Index++)
+	for (Index = 0; Index < InteractionPoints.Length; Index++)
 	{
 		InteractiveActor = InteractionPoints[Index].InteractiveActor;
 		InteractiveObject = InteractiveActor.GetInteractiveState();
-		
-		if( InteractiveActor == None 
-			|| InteractiveObject == None 
+
+		if (InteractiveActor == None
+			|| InteractiveObject == None
 			|| IsInteractionLocationRestrictedByObject(InteractionPoints[Index].Location, InteractiveObject)
-			|| !IsObjectAppropriateForInteractionType(InteractiveObject, Unit, Type) )
+			|| !IsObjectAppropriateForInteractionType(InteractiveObject, Unit, Type))
 		{
 			InteractionPoints.Remove(Index, 1);
 			Index--;

@@ -154,7 +154,7 @@ static function EventListenerReturn OnTacticalGameEnd(Object EventData, Object E
 
 	History = `XCOMHISTORY;
 	Settings = XComGameState_CampaignSettings(History.GetSingleGameStateObjectForClass(class'XComGameState_CampaignSettings'));
-	Battle = XComGameState_BattleData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
+	Battle = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
 
 	`log("XComGameState_AchievementTracker.OnTacticalGameEnd");
 
@@ -180,19 +180,19 @@ static function EventListenerReturn OnTacticalGameEnd(Object EventData, Object E
 	}
 
 	// Recover the Forge Item
-	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityFORGE")
+	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityFORGE" && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
 	{
 		`ONLINEEVENTMGR.UnlockAchievement(AT_RecoverForgeItem);
 	}
 
 	// Recover the Psi Gate
-	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityPSIGATE")
+	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityPSIGATE" && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
 	{
 		`ONLINEEVENTMGR.UnlockAchievement(AT_RecoverPsiGate);
 	}
 	
 	// Recover the Black Site Data
-	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityBLACKSITE")
+	if (string(Battle.MapData.ActiveMission.MissionName) == "AdventFacilityBLACKSITE" && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
 	{
 		`ONLINEEVENTMGR.UnlockAchievement(AT_RecoverBlackSiteData);
 	}
@@ -236,6 +236,18 @@ static function EventListenerReturn OnTacticalGameEnd(Object EventData, Object E
 		{
 			`ONLINEEVENTMGR.UnlockAchievement(AT_BeatMissionNoCivilianDeath);
 		}
+	}
+
+	if (Battle.m_strDesc == "Skirmish Mode")
+	{
+		class'X2TacticalGameRuleset'.static.ReleaseScriptLog("TLE Achievement Awarded: Complete Custom Skirmish");
+		`ONLINEEVENTMGR.UnlockAchievement(AT_CompleteCustomSkirmish);
+	}
+
+	if ((History.GetSingleGameStateObjectForClass(class'XComGameState_ChallengeData', true) != none) && `ONLINEEVENTMGR.bIsLocalChallengeModeGame)
+	{
+		class'X2TacticalGameRuleset'.static.ReleaseScriptLog("TLE Achievement Awarded: Complete Local Challenge");
+		`ONLINEEVENTMGR.UnlockAchievement(AT_CompleteLocalChallenge);
 	}
 	
 	// Check for AT_BeatMissionJuneOrLater - Beat a mission in June or later using only Rookies
@@ -296,7 +308,7 @@ static function EventListenerReturn OnTacticalGameEnd(Object EventData, Object E
 	// Recover a Codex Brain
 	// Once in the mission use "DropUnit Cyberus 1 False". Then kill it and finish the mission.
 	// Only applicable in the single-player campaign (not MP, not challenge mode)
-	if (AchievementData.bKilledACyberusThisMission && `XENGINE.IsSinglePlayerGame() && !(`ONLINEEVENTMGR.bIsChallengeModeGame))
+	if (AchievementData.bKilledACyberusThisMission && `XENGINE.IsSinglePlayerGame() && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
 	{
 		`ONLINEEVENTMGR.UnlockAchievement(AT_RecoverCodexBrain);
 	}
@@ -469,57 +481,57 @@ static function EventListenerReturn OnWeaponKillType(Object EventData, Object Ev
 	{
 		return ELR_NoInterrupt;
 	}
-
+	
 	if (`XENGINE.IsSinglePlayerGame() && !(`ONLINEEVENTMGR.bIsChallengeModeGame))
 	{
-	Ability = XComGameState_Ability(EventData);
+		Ability = XComGameState_Ability(EventData);
 
-	History = `XCOMHISTORY;
+		History = `XCOMHISTORY;
 		
-	Item = XComGameState_Item(History.GetGameStateForObjectID(Ability.SourceWeapon.ObjectID));
-	if (Item == none)
-		return ELR_NoInterrupt;
+		Item = XComGameState_Item(History.GetGameStateForObjectID(Ability.SourceWeapon.ObjectID));
+		if (Item == none)
+			return ELR_NoInterrupt;
 
-	TemplateName = Item.GetMyTemplateName();
+		TemplateName = Item.GetMyTemplateName();
 
-	switch (TemplateName)
-	{
-	case 'RocketLauncher':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_RocketLauncher);
-		break;
+		switch (TemplateName)
+		{
+		case 'RocketLauncher':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_RocketLauncher);
+			break;
 
-	case 'ShredderGun':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_ShredderGun);
-		break;
+		case 'ShredderGun':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_ShredderGun);
+			break;
 
-	case 'Flamethrower':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_Flamethrower);
-		break;
+		case 'Flamethrower':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_Flamethrower);
+			break;
 
-	case 'FlamethrowerMk2':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_HellfireProjector);
-		break;
+		case 'FlamethrowerMk2':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_HellfireProjector);
+			break;
 
-	case 'BlasterLauncher':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_BlasterLauncher);
-		break;
+		case 'BlasterLauncher':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_BlasterLauncher);
+			break;
 
-	case 'PlasmaBlaster':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_PlasmaBlaster);
-		break;
+		case 'PlasmaBlaster':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_PlasmaBlaster);
+			break;
 
-	case 'ShredstormCannon':
-		`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_ShredstormCannon);
-		break;
-	}
-	
-	// Achievement: Kill an enemy with every heavy weapon in the game (Doesn't have to be in the same game)
-	if (`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask == ((0x1 << HeavyWeaponKill.EnumCount) - 1))
-	{
-		`ONLINEEVENTMGR.UnlockAchievement(AT_KillWithEveryHeavyWeapon);
-	}
+		case 'ShredstormCannon':
+			`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask = `XPROFILESETTINGS.Data.m_HeavyWeaponKillMask | (0x1 << HWK_ShredstormCannon);
+			break;
+		}
 
-	`ONLINEEVENTMGR.SaveProfileSettings();
+		// Achievement: Kill an enemy with every heavy weapon in the game (Doesn't have to be in the same game)
+		if (`XPROFILESETTINGS.Data.m_HeavyWeaponKillMask == ((0x1 << HeavyWeaponKill.EnumCount) - 1))
+		{
+			`ONLINEEVENTMGR.UnlockAchievement(AT_KillWithEveryHeavyWeapon);
+		}
+
+		`ONLINEEVENTMGR.SaveProfileSettings();
 	}
 	
 	return ELR_NoInterrupt;
@@ -579,7 +591,7 @@ static function OnUnitDied(XComGameState_Unit Unit, XComGameState NewGameState, 
 
 		CharacterGroupName = Unit.GetMyTemplate().CharacterGroupName;
 
-		if (CharacterGroupName == 'AdventPsiWitch')
+		if (CharacterGroupName == 'AdventPsiWitch' && !class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
 		{
 			// Achievement: Kill an Avatar
 			`ONLINEEVENTMGR.UnlockAchievement(AT_KillAvatar);
@@ -806,6 +818,12 @@ static function FinalMissionOnSuccess()
 	{
 		`ONLINEEVENTMGR.UnlockAchievement(AT_WinGameUsingConventionalGear);
 	}
+
+	if (Settings.RequiredDLC.Find( 'TLE' ) != INDEX_NONE)
+	{
+		class'X2TacticalGameRuleset'.static.ReleaseScriptLog("TLE Achievement Awarded: Complete Campaign with TLE");
+		`ONLINEEVENTMGR.UnlockAchievement(AT_CompleTLECampaign);
+	}
 }
 
 // This is called when a unit is skulljacked
@@ -848,7 +866,7 @@ static function EventListenerReturn OnMissionObjectiveComplete(Object EventData,
 	local MissionObjectiveDefinition MissionObjective;
 	local XComGameState_Unit Unit;
 	local bool IsSquadConcealed;
-
+	
 	if (GameState.GetContext( ).InterruptionStatus == eInterruptionStatus_Interrupt)
 	{
 		return ELR_NoInterrupt;
@@ -856,36 +874,36 @@ static function EventListenerReturn OnMissionObjectiveComplete(Object EventData,
 
 	if (`XENGINE.IsSinglePlayerGame() && !(`ONLINEEVENTMGR.bIsChallengeModeGame))
 	{
-	BattleData = XComGameState_BattleData(EventData);
+		BattleData = XComGameState_BattleData(EventData);
 
-	// Reach the objective item in a Guerilla Ops mission with the entire squad still concealed
-	foreach BattleData.MapData.ActiveMission.MissionObjectives(MissionObjective)
-	{
-		if (MissionObjective.bCompleted &&
-			(string(MissionObjective.ObjectiveName) == "Hack" ||
-			 string(MissionObjective.ObjectiveName) == "Recover" ||
-			 string(MissionObjective.ObjectiveName) == "ProtectDevice" ||
-			 string(MissionObjective.ObjectiveName) == "DestroyObject"))
+		// Reach the objective item in a Guerilla Ops mission with the entire squad still concealed
+		foreach BattleData.MapData.ActiveMission.MissionObjectives(MissionObjective)
 		{
-			IsSquadConcealed = true;
-			foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit', Unit)
+			if (MissionObjective.bCompleted &&
+				(string(MissionObjective.ObjectiveName) == "Hack" ||
+					string(MissionObjective.ObjectiveName) == "Recover" ||
+					string(MissionObjective.ObjectiveName) == "ProtectDevice" ||
+					string(MissionObjective.ObjectiveName) == "DestroyObject"))
 			{
-				if (Unit.IsPlayerControlled() && Unit.IsSoldier())
+				IsSquadConcealed = true;
+				foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit', Unit)
 				{
-					if (!Unit.IsSquadConcealed())
+					if (Unit.IsPlayerControlled() && Unit.IsSoldier())
 					{
-						IsSquadConcealed = false;
-						break;
+						if (!Unit.IsSquadConcealed())
+						{
+							IsSquadConcealed = false;
+							break;
+						}
 					}
 				}
-			}
 
-			if (IsSquadConcealed)
-			{
-				`ONLINEEVENTMGR.UnlockAchievement(AT_GuerillaWarfare);
+				if (IsSquadConcealed)
+				{
+					`ONLINEEVENTMGR.UnlockAchievement(AT_GuerillaWarfare);
+				}
 			}
 		}
-	}
 	}
 
 	return ELR_NoInterrupt;

@@ -128,20 +128,20 @@ simulated function FindActions()
 		if (FactionState.CovertActions.Find('ObjectID', ActionState.ObjectID) != INDEX_NONE ||
 			FactionState.GoldenPathActions.Find('ObjectID', ActionState.ObjectID) != INDEX_NONE)
 		{
-		if (ActionState.bStarted)
-		{
-			arrActions.InsertItem(0, ActionState); // Always place any currently running Covert Action at the top of the list
-			bActionInProgress = true;
-		}
-			else if (ActionState.CanActionBeDisplayed() && (ActionState.GetMyTemplate().bGoldenPath || FactionState.bSeenFactionHQReveal))
-		{
-			arrActions.AddItem(ActionState);
-			if( ActionState.bNewAction)
+			if (ActionState.bStarted)
 			{
-				NewActionFactions.AddItem(ActionState.GetFaction());
+				arrActions.InsertItem(0, ActionState); // Always place any currently running Covert Action at the top of the list
+				bActionInProgress = true;
+			}
+			else if (ActionState.CanActionBeDisplayed() && (ActionState.GetMyTemplate().bGoldenPath || FactionState.bSeenFactionHQReveal))
+			{
+				arrActions.AddItem(ActionState);
+				if (ActionState.bNewAction)
+				{
+					NewActionFactions.AddItem(ActionState.GetFaction());
+				}
 			}
 		}
-	}
 	}
 
 	arrActions.Sort(SortActionsByFactionName);

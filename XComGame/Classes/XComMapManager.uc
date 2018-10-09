@@ -289,25 +289,28 @@ simulated function FindStreamingMap( name nCharType, out array<string> arrStream
 	arrStreaming.AddItem( strMap );
 }
 
-function string SelectMapImage(string MapName)
+function string SelectMapImage(string MapName, optional string RequestBiome = "" )
 {
 	local int Index;
 	local int IndexBestMatch;	
 	local XComGameStateHistory History;	
 	local XComGameState_BattleData BattleDataState;
+	local string TargetBiome; 
 
 	//Get the biome data straight out of the battle data
 	History = `XCOMHISTORY;
 	BattleDataState = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData', true));
 
+	TargetBiome = (RequestBiome == "") ? BattleDataState.MapData.Biome : RequestBiome; 
+
 	IndexBestMatch = 0;
 	for(Index = 0; Index < arrMapImageDefs.Length; ++Index)
 	{
 		//We have a potential match
-		if(arrMapImageDefs[Index].MapName == MapName)
+		if(arrMapImageDefs[Index].MapName ~= MapName)
 		{
 			IndexBestMatch = Index;
-			if(arrMapImageDefs[Index].Biome == BattleDataState.MapData.Biome)
+			if(arrMapImageDefs[Index].Biome ~= TargetBiome)
 			{
 				break; //We found a perfect match, exit
 			}
@@ -326,10 +329,10 @@ function string SelectMPMapImage(string MapName, string Biome)
 	for(Index = 0; Index < arrMapImageDefs.Length; ++Index)
 	{
 		//We have a potential match
-		if(arrMapImageDefs[Index].MapName == MapName)
+		if(arrMapImageDefs[Index].MapName ~= MapName)
 		{
 			IndexBestMatch = Index;
-			if(arrMapImageDefs[Index].Biome == Biome)
+			if(arrMapImageDefs[Index].Biome ~= Biome)
 			{
 				break; //We found a perfect match, exit
 			}

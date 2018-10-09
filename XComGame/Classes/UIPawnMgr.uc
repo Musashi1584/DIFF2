@@ -567,6 +567,19 @@ simulated function ReleasePawnInternal(Actor referrer, int UnitRef, out array<Pa
 	}
 }
 
+simulated function XComGameState_Unit GetUnitState( int ObjectID )
+{
+	local PawnInfo Info;
+
+	foreach Pawns(Info)
+	{
+		if ((Info.Unit != none) && (Info.Unit.ObjectID == ObjectID))
+			return Info.Unit;
+	}
+
+	return none;
+}
+
 defaultproperties
 {
 }

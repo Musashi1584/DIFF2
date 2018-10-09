@@ -13,6 +13,7 @@ class XComGameState_ChallengeScore extends XComGameState_BaseObject
 
 var ChallengeModePointType ScoringType;
 var int AddedPoints;
+var int LadderBonus;
 
 static native function int AddTacticalGameEnd(int CumulativePoints);
 static native function int AddKillMail(XComGameState_Unit SourceUnit, XComGameState_Unit KilledUnit, XComGameState GameState);
@@ -20,7 +21,7 @@ static native function int AddMissionObjectiveComplete();
 static native function int AddCivilianRescued(XComGameState_Unit SourceUnit, XComGameState_Unit RescuedUnit);
 static native function int AddIndividualMissionObjectiveComplete(SeqAct_DisplayMissionObjective SA_DisplayMissionObj);
 
-static native function int GetIndividualMissionObjectiveCompletedValue(SeqAct_DisplayMissionObjective SA_DisplayMissionObj);
+static native function int GetIndividualMissionObjectiveCompletedValue(SeqAct_DisplayMissionObjective SA_DisplayMissionObj, optional out int outLadderBonus);
 
 native function bool Validate(XComGameState HistoryGameState, INT GameStateIndex) const;
 native protected function SubmitGameState(XComGameState NewGameState);

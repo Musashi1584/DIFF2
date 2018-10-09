@@ -150,45 +150,45 @@ private function int SortUnlocksPurchased(X2SoldierUnlockTemplate UnlockTemplate
 }
 
 private function int SortUnlocksByClass(X2SoldierUnlockTemplate UnlockTemplateA, X2SoldierUnlockTemplate UnlockTemplateB)
-	{
+{
 	local bool UnlockARequiresClass, UnlockBRequiresClass;
 
 	UnlockARequiresClass = (UnlockTemplateA.AllowedClasses.Length > 0);
 	UnlockBRequiresClass = (UnlockTemplateB.AllowedClasses.Length > 0);
 
 	if (UnlockARequiresClass && !UnlockBRequiresClass) // Sort all class specific perks to the bottom of the list
-			return -1;
+		return -1;
 	else if (!UnlockARequiresClass && UnlockBRequiresClass)
-			return 1;
-		else
+		return 1;
+	else 
 		return 0;
 }
 
 private function int SortUnlocksByRank(X2SoldierUnlockTemplate UnlockTemplateA, X2SoldierUnlockTemplate UnlockTemplateB)
-		{
-			if (UnlockTemplateA.Requirements.RequiredHighestSoldierRank < UnlockTemplateB.Requirements.RequiredHighestSoldierRank)
-				return 1;
-			else if (UnlockTemplateA.Requirements.RequiredHighestSoldierRank > UnlockTemplateB.Requirements.RequiredHighestSoldierRank)
-				return -1;
-			else
+{
+	if (UnlockTemplateA.Requirements.RequiredHighestSoldierRank < UnlockTemplateB.Requirements.RequiredHighestSoldierRank)
+		return 1;
+	else if (UnlockTemplateA.Requirements.RequiredHighestSoldierRank > UnlockTemplateB.Requirements.RequiredHighestSoldierRank)
+		return -1;
+	else
 		return 0;
 }
 
 private function int SortUnlocksByCost(X2SoldierUnlockTemplate UnlockTemplateA, X2SoldierUnlockTemplate UnlockTemplateB)
-			{
+{
 	local int CostA, CostB;
 
-				// Then sort by supply cost
-				CostA = class'UIUtilities_Strategy'.static.GetCostQuantity(UnlockTemplateA.Cost, 'Supplies');
-				CostB = class'UIUtilities_Strategy'.static.GetCostQuantity(UnlockTemplateB.Cost, 'Supplies');
+	// Then sort by supply cost
+	CostA = class'UIUtilities_Strategy'.static.GetCostQuantity(UnlockTemplateA.Cost, 'Supplies');
+	CostB = class'UIUtilities_Strategy'.static.GetCostQuantity(UnlockTemplateB.Cost, 'Supplies');
 
-				if (CostA < CostB)
-					return 1;
-				else if (CostA > CostB)
-					return -1;
-				else
-					return 0;
-			}
+	if (CostA < CostB)
+		return 1;
+	else if (CostA > CostB)
+		return -1;
+	else
+		return 0;
+}
 
 simulated function bool CanAffordItem(int iOption)
 {

@@ -159,9 +159,9 @@ var private X2FiraxisLiveClient LiveClient;
 var bool bCHEATDisableAutoLogin;
 var array<MOTDData> CachedMOTDData;
 
-native function StatSetValue(name Key, int Value, KVPScope Scope = eKVPSCOPE_USER);
-native function StatAddValue(name Key, int Value, KVPScope Scope = eKVPSCOPE_USER);
-native function StatSubValue(name Key, int Value, KVPScope Scope = eKVPSCOPE_USER);
+native function StatSetValue(name Key, int Value, KVPScope Scope);
+native function StatAddValue(name Key, int Value, KVPScope Scope);
+native function StatSubValue(name Key, int Value, KVPScope Scope);
 
 native function AnalyticsGameTutorialCompleted();
 native function AnalyticsGameTutorialExited();
@@ -178,6 +178,10 @@ native function BizAnalyticsGameProgressv2( string CampaignID, string MilestoneN
 native function BizAnalyticsMPStart( string SessionID, string GameMode, string Map, string TeamMakeup );
 native function BizAnalyticsMPEnd( string SessionID, int TurnCount, bool IsWinner, bool IsCompleted );
 
+native function BizAnalyticsLadderStart( string CampaignID, int LadderID, bool NewLadder, int Difficulty, string SquadID );
+native function BizAnalyticsLadderEnd( string CampaignID, int LadderID, int Score, int Medal, string SquadID, int Difficulty );
+native function BizAnalyticsLadderUpgrade( string CampaignID, string Choice1, string Choice2, int Choice );
+
 native function string GetGUID( EGUIDType Type = EGUID_GUID128ASCII );
 
 cpptext
@@ -187,6 +191,8 @@ cpptext
 	void SendTelemetryData(class FTelemetryData& Data);
 
 	void SendFileData(const FString& FileName, const void* Data, INT Size);
+
+	void FlushTelemetryData();
 //
 // FTickableObject interface
 //
@@ -209,6 +215,8 @@ cpptext
 	 * @param DeltaTime The time that has passed since last frame.
 	 */
 	virtual void Tick(FLOAT DeltaTime);
+
+	virtual void ShutdownAfterError();
 
 
 //
@@ -243,11 +251,18 @@ private:
 
 event Init()
 {
+	local OnlinePlayerInterface PlayerInterface;
+
 	`log(`location);
 	AddLoginStatusDelegate(InternalStateHandler_OnLoginStatus);
 
+	PlayerInterface = class'Engine'.static.GetOnlineSubsystem().PlayerInterface;
+	PlayerInterface.AddRetrieveEncryptedAppTicketDelegate(OnRetrieveEncryptedAppTicketComplete);
+
 	LiveClient = `FXSLIVE;
 }
+
+native function OnRetrieveEncryptedAppTicketComplete(bool bWasSuccessful, array<byte> EncryptedTicket);
 
 /**
  * FirstClientInit - Called whenever the UIFinalShell gets to the first User Input, basically saying that the system is ready to handle requests.

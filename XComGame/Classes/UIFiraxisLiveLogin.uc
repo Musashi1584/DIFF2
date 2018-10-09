@@ -280,45 +280,28 @@ function InitDoBDropDowns()
 
 function bool UpdateLoginState()
 {
-	local EStatusType StatusType;
+	local bool bIsAccountAnnoymous, bIsAccountFull, bIsAccountPlatform;
 
-	StatusType = LiveClient.GetStatus();
-	`log( `location @ `ShowEnum(EStatusType, StatusType, StatusType),,'FiraxisLive');
+	bIsAccountAnnoymous = LiveClient.IsAccountAnonymous();
+	bIsAccountFull = LiveClient.IsAccountFull();
+	bIsAccountPlatform = LiveClient.IsAccountPlatform();
+	`log( `location @ `ShowVar(bIsAccountAnnoymous) @ `ShowVar(bIsAccountFull) @ `ShowVar(bIsAccountPlatform),,'FiraxisLive');
 
-	switch(StatusType)
+	if (bIsAccountAnnoymous)
 	{
-	case E2kST_Online:
-	case E2kST_OnlineLoggedIn:
-		if( LiveClient.IsAccountAnonymous() )
-		{
-			LiveClient.UpgradeAccount();
-		}
-		else if( LiveClient.IsAccountFull() )
-		{
-			GotoState('LoggedIn');
-		}
-		else if( LiveClient.IsAccountPlatform() )
-		{
-			LiveClient.StartLinkAccount();
-		}
-		else
-		{
-			return false;
-		}
-		break;
-
-	case E2kST_Unknown:
-	case E2kST_Offline:
-	case E2kST_OfflineBanned:
-	case E2kST_OfflineBlocked:
-	case E2kST_OfflineRejectedWhitelist:
-	case E2kST_OfflineRejectedCapacity:
-	case E2kST_OfflineLegalAccepted:
-	case E2kST_OfflineLoggedInCached:
-	case E2kST_LoggedInDoormanOffline:
-	default:
+		LiveClient.UpgradeAccount();
+	}
+	else if (bIsAccountFull)
+	{
+		GotoState('LoggedIn');
+	}
+	else if (bIsAccountPlatform)
+	{
+		LiveClient.StartLinkAccount();
+	}
+	else
+	{
 		return false;
-		break;
 	}
 	return true;
 }
@@ -376,7 +359,7 @@ auto state Startup
 	function OnConnectionStatusChange(string Title, string Message, string OkLabel)
 	{
 		global.OnConnectionStatusChange(Title, Message, OkLabel);
-		GotoConnectionStatus();
+		//GotoConnectionStatus();
 	}
 
 	function OnLogonData(string Title, string Message, string EMailLabel, string PasswordLabel, string OkLabel, string CancelLabel, string CreateLabel, bool Error)
@@ -875,6 +858,14 @@ state LinkingAccount_NewUser
 		}
 	}
 
+	function OnConnectionStatusChange(string Title, string Message, string OkLabel)
+	{
+		`log(`location @ `ShowVar(Title) @ `ShowVar(Message) @ `ShowVar(OkLabel),,'FiraxisLive');
+
+		global.OnConnectionStatusChange(Title, Message, OkLabel);
+
+		LiveClient.RespondConnectionStatus();
+	}
 
 Begin:
 	InitButtons();
@@ -971,14 +962,19 @@ state LinkingAccount
 
 	}
 
-	//function OnConnectionStatusChange(string Title, string Message, string OkLabel)
-	//{
-	//	`log(`location @ `ShowVar(Title) @ `ShowVar(Message) @ `ShowVar(OkLabel),,'FiraxisLive');
+	function OnConnectionStatusChange(string Title, string Message, string OkLabel)
+	{
+		`log(`location @ `ShowVar(Title) @ `ShowVar(Message) @ `ShowVar(OkLabel),,'FiraxisLive');
 
-	//	global.OnConnectionStatusChange(Title, Message, OkLabel);
+		global.OnConnectionStatusChange(Title, Message, OkLabel);
 
-	//	UpdateLoginState();
-	//}
+		LiveClient.RespondConnectionStatus();
+	}
+
+	function OnLoginStatus(ELoginStatusType Type, EFiraxisLiveAccountType Account, string Message, bool bSuccess)
+	{
+		global.OnLoginStatus(Type, Account, Message, bSuccess);
+	}
 
 Begin:
 	`log(`location @ "Begin State.",,'FiraxisLive');
@@ -989,7 +985,7 @@ state ConnectionStatus
 {
 	event EndState(name NextStateName)
 	{
-		LiveClient.RespondConnectionStatus();
+		//LiveClient.RespondConnectionStatus();
 	}
 
 	function ResetScreen()
@@ -1018,7 +1014,7 @@ state ConnectionStatus
 
 	simulated function CloseScreen()
 	{
-		LiveClient.RespondConnectionStatus();
+		//LiveClient.RespondConnectionStatus();
 		global.CloseScreen();
 	}
 

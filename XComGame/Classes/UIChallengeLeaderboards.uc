@@ -64,6 +64,7 @@ var int							m_LeaderboardLimit;
 var string						m_OverrideLeaderboardName;
 var bool						m_bGetPlayerGameSave;
 var bool						m_bDisplayNoChallengeDataOnInit;
+var bool						m_bShowPlayerPercentile;
 
 var private X2ChallengeModeInterface    ChallengeModeInterface;
 var private XComChallengeModeManager	ChallengeModeManager;
@@ -225,6 +226,7 @@ simulated function OnListReplayChanged(UIList ContainerList, int ItemIndex)
 		for(i = 0; i < m_kList.ItemCount; i++)
 		{
 			listItem = UIChallengeLeaderboard_ListItem(m_kList.GetItem(i));
+			listItem.bShowPercentile = m_bShowPlayerPercentile;
 			listItem.UpdateData(listItem.m_LeaderboardEntry);
 		}
 
@@ -237,6 +239,9 @@ simulated function OnListReplayChanged(UIList ContainerList, int ItemIndex)
 
 simulated function UpdateNavButtons()
 {
+	m_NavHelp.ClearButtonHelp();
+	m_NavHelp.AddBackButton(CloseScreen);
+
 	if (`ISCONTROLLERACTIVE)
 	{
 		//MODIFIED FOR XBOX USE OF 'GAMERCARD' - JTA 2016/4/8
@@ -515,6 +520,8 @@ public function NextChallengeCallback(UIButton button)
 		if (m_arrIntervals.Length == m_CurrentLeaderboardIndex + 1)
 		{
 			m_NextChallengeButton.DisableButton();
+			// Enable percentiles for the current challenge only.
+			m_bShowPlayerPercentile = true;
 		}
 
 		class'XComGameState_TimerData'.static.GetUTCDate(class'XComGameState_TimerData'.static.GetUTCTimeInSeconds() - ((m_arrIntervals.Length - 1 - m_CurrentLeaderboardIndex) * 24 * 60 * 60), year, month, day);
@@ -537,6 +544,7 @@ public function NextChallengeCallback(UIButton button)
 		m_plrEntry.SoldiersAlive = 0;
 
 		bLocalStartedMission = false;
+		m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 		m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 
 		SetScoreBreakdown();
@@ -559,6 +567,8 @@ public function PreviousChallengeCallback(UIButton button)
 		m_NextChallengeButton.EnableButton();
 		m_CurrentLeaderboardIndex -= 1;
 		
+		// Don't show the percentiles for previous challenges
+		m_bShowPlayerPercentile = false;
 		if (m_arrIntervals.Length - 6 > m_CurrentLeaderboardIndex)
 		{
 			m_PreviousChallengeButton.DisableButton();
@@ -584,6 +594,7 @@ public function PreviousChallengeCallback(UIButton button)
 		m_plrEntry.SoldiersAlive = 0;
 
 		bLocalStartedMission = false;
+		m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 		m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 
 		SetScoreBreakdown();
@@ -681,7 +692,7 @@ function SetPlayerRow(const out TLeaderboardEntry PlayerEntry)
 {
 	MC.BeginFunctionOp("SetPlayerRow");
 	MC.QueueBoolean(true);
-	MC.QueueString(string(PlayerEntry.iRank) @ "(" $ PlayerEntry.iPercentile $"%)");
+	MC.QueueString(string(PlayerEntry.iRank) @ (m_bShowPlayerPercentile ? "(" $ PlayerEntry.iPercentile $"%)" : ""));
 	MC.QueueString(PlayerEntry.strPlayerName);
 	MC.QueueString(string(PlayerEntry.iScore));
 	MC.QueueString(GetMinutesSecondsTime(PlayerEntry.iTime)); // maybe reformat this
@@ -690,6 +701,7 @@ function SetPlayerRow(const out TLeaderboardEntry PlayerEntry)
 
 	if (m_plrLeaderboardEntry != none)
 	{
+		m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 		m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 		UpdateListItem(m_plrLeaderboardEntry);
 	}
@@ -710,7 +722,7 @@ function LoadTitleFromHistory()
 {
 	local XComGameState_BattleData BattleData;
 
-	BattleData = XComGameState_BattleData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
+	BattleData = XComGameState_BattleData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_BattleData', false));
 	class'Engine'.static.SetRandomSeeds(BattleData.iLevelSeed);
 }
 
@@ -1006,6 +1018,10 @@ function bool GetCurrentIntervalFromUIChallengeMode_SquadSelect()
 
 	if (SquadSelectScreen != none)
 	{
+		// Get total number of players that have completed a challenge
+		m_TotalPlayerCount = SquadSelectScreen.m_TotalPlayerCount;
+		m_bShowPlayerPercentile = true; // Show the Percentile for the player, since we just got the total number of players from the Select screen.
+
 		initialSize = m_arrIntervals.Length;
 		// Steal the current intervals
 		for (i = 0; i < SquadSelectScreen.m_arrIntervals.Length; i++)
@@ -1022,6 +1038,7 @@ function bool GetCurrentIntervalFromUIChallengeMode_SquadSelect()
 			LoadTitleFromHistory();
 
 			// Initialize the player entry item to this interval.
+			m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 			m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 			UpdateListItem(m_plrLeaderboardEntry);
 
@@ -1031,8 +1048,6 @@ function bool GetCurrentIntervalFromUIChallengeMode_SquadSelect()
 			// Prefetch the friend's list
 			ASyncReadFriendList(OnFriendFetchComplete, m_LeaderboardOffset, m_LeaderboardLimit);
 		}
-		// Get total number of players that have completed a challenge
-		m_TotalPlayerCount = SquadSelectScreen.m_TotalPlayerCount;
 	}
 	return m_arrIntervals.Length > 0;
 }
@@ -1109,6 +1124,9 @@ function bool GetCurrentIntervalFromTacticalGame()
 			{
 				YourRankButtonCallback(none);
 			}
+
+			// HACK: Don't show the player percentile on the leaderboard from the Tactical Game (until the total number of players is retrieved) @ttalley
+			m_bShowPlayerPercentile = false;
 
 			// Get total number of players that have completed a challenge
 			//TacticalChallengeModeManager = `TACTICALGRI.ChallengeModeManager;
@@ -1207,6 +1225,7 @@ function OnReceivedChallengeModeDeactivatedIntervalEnd()
 		m_CurrentLeaderboardIndex = m_arrIntervals.length -1;
 
 		// Initialize the player entry item to this interval.
+		m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 		m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 		UpdateListItem(m_plrLeaderboardEntry);
 
@@ -1259,6 +1278,7 @@ function OnRequestUserInformationComplete(bool bWasSuccessful, UniqueNetId Platf
 		m_LeaderboardsData[Index].strPlayerName = PlayerName;
 		ItemEntry = m_LeaderboardsData[Index];
 		ListItem = UIChallengeLeaderboard_ListItem(m_kList.GetItem(Index));
+		ListItem.bShowPercentile = m_bShowPlayerPercentile;
 		ListItem.UpdateData(ItemEntry);
 	}
 }
@@ -1294,6 +1314,17 @@ function CompleteLeaderboardFetch(EMPLeaderboardType LeaderboardType)
 		break;
 	}
 }
+
+simulated function OnReceiveFocus()
+{
+	super.OnReceiveFocus();
+	if( m_bDisplayNoChallengeDataOnInit )
+	{
+		m_bDisplayNoChallengeDataOnInit = false;
+		DisplayNoChallengeDialog();
+	}
+}
+
 
 //bsg-jneal (5.9.17): delaying refresh data to override label text for button image injection, this is necesary because list items do not have their states set initially
 function DelayedRefreshListItemChanged()
@@ -1362,10 +1393,14 @@ function OnReceivedChallengeModeLeaderboardEntry(ChallengeModeLeaderboardData En
 		Index = FindLeaderboardIndex(Entry.PlayerID);
 	}
 
-	m_TotalPlayerCount = 15;
-	TopPercentile = (float(m_TotalPlayerCount - Entry.Rank) / float(m_TotalPlayerCount)) * 100.0;
-	//TopPercentile = 100.0 - ((float(Entry.Rank) / float(m_TotalPlayerCount)) * 100.0);
-	//TopPercentile = (100.0 / m_TotalPlayerCount) * (Entry.Rank - 0.5);
+	if (m_TotalPlayerCount == 0 || (m_TotalPlayerCount < Entry.Rank))
+	{
+		TopPercentile = 0;
+	}
+	else
+	{
+		TopPercentile = (float(m_TotalPlayerCount - Entry.Rank) / float(m_TotalPlayerCount)) * 100.0;
+	}
 	`log(`location @ `ShowVar(Entry.Rank) @ `ShowVar(m_TotalPlayerCount) @ `ShowVar(TopPercentile));
 
 	NewEntry.iRank = Entry.Rank;
@@ -1392,6 +1427,7 @@ function OnReceivedChallengeModeLeaderboardEntry(ChallengeModeLeaderboardData En
 		m_plrLeaderboardEntry.m_IntervalID = m_arrIntervals[m_CurrentLeaderboardIndex].IntervalSeedID;
 		SetPlayerRow(m_plrEntry);
 		SetScoreBreakdown( string(NewEntry.SoldiersAlive), string(NewEntry.KilledEnemies), string(NewEntry.CompletedObjectives), string(NewEntry.CiviliansSaved), string(NewEntry.TimeBonus), string(NewEntry.UninjuredSoldiers));
+		m_plrLeaderboardEntry.bShowPercentile = m_bShowPlayerPercentile;
 		m_plrLeaderboardEntry.UpdateData(m_plrEntry);
 		UpdateListItem(m_plrLeaderboardEntry);
 		m_bFoundLocalPlayerLeaderboardData = true;
@@ -1669,4 +1705,5 @@ defaultproperties
 	m_LeaderboardOffset=0
 	m_LeaderboardLimit = 10
 	m_bDisplayNoChallengeDataOnInit=false
+	m_bShowPlayerPercentile=false
 }

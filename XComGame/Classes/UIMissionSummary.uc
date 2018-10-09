@@ -56,6 +56,7 @@ var localized string m_strMissionPhotobooth;
 
 var bool bAllSoldiersDead;
 var bool bUserPhotoTaken;
+var bool bClosingScreen;
 
 simulated function InitScreen(XComPlayerController InitController, UIMovie InitMovie, optional name InitName)
 {
@@ -636,6 +637,9 @@ function AddNumParam(float Param, out array<ASValue> Data)
 function SetupTacticalPhotoStudio()
 {
 	m_kPhotoboothAutoGen = Spawn(class'X2Photobooth_TacticalAutoGen', self);
+
+	m_kPhotoboothAutoGen.bLadderMode = `XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ) != none;
+
 	m_kPhotoboothAutoGen.Init();
 }
 
@@ -666,7 +670,7 @@ simulated function bool OnUnrealCommand(int ucmd, int arg)
 		case (class'UIUtilities_Input'.const.FXS_BUTTON_A):
 		case (class'UIUtilities_Input'.const.FXS_KEY_ENTER):
 		case (class'UIUtilities_Input'.const.FXS_KEY_SPACEBAR):
-			CloseScreen();
+			CloseScreenTakePhoto();
 			return true;
 
 		case class'UIUtilities_Input'.const.FXS_BUTTON_START:
@@ -714,16 +718,22 @@ simulated function HideObscuringParticleSystems()
 }
 
 simulated function CloseScreenTakePhoto()
-{	
+{
+	bClosingScreen = true;
+
 	if (!BattleData.IsMultiplayer() && !bAllSoldiersDead && !bUserPhotoTaken)
 	{
 		NavHelp.ContinueButton.DisableButton();
 
 		// We assume the screen fade will be cleared on the changing of maps after this screen closes.
-		class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().ClientSetCameraFade(true, MakeColor(0, 0, 0), vect2d(0, 1), 0.0);
+		if (`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true) == none)
+		{
+			class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().ClientSetCameraFade(true, MakeColor(0, 0, 0), vect2d(0, 1), 0.0);
+		}
 
 		SetupTacticalPhotoStudio();
 		m_kPhotoboothAutoGen.RequestPhoto(PhotoTaken);
+		bUserPhotoTaken = true;
 
 		HideObscuringParticleSystems();
 	}
@@ -746,7 +756,7 @@ simulated function CloseThenOpenPhotographerScreen()
 {
 	local XComTacticalController LocalController;
 	
-	//super.CloseScreen();
+	if (bClosingScreen) return;
 
 	LocalController = XComTacticalController(BATTLE().GetALocalPlayerController());
 	if (LocalController != none && LocalController.PlayerCamera != none && LocalController.PlayerCamera.bEnableFading)
@@ -763,7 +773,7 @@ simulated function CloseThenOpenPhotographerScreenButton(UIButton button)
 {
 	local XComTacticalController LocalController;
 
-	//super.CloseScreen();
+	if (bClosingScreen) return;
 
 	LocalController = XComTacticalController(BATTLE().GetALocalPlayerController());
 	if (LocalController != none && LocalController.PlayerCamera != none && LocalController.PlayerCamera.bEnableFading)
@@ -804,4 +814,5 @@ DefaultProperties
 	bConsumeMouseEvents = true;
 	bHideOnLoseFocus = true;
 	bUserPhotoTaken = false;
+	bClosingScreen = false;
 }

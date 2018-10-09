@@ -26,8 +26,8 @@ protected event ContextBuildVisualization()
 	local XComGameStateHistory History;
 	local XComGameState_ChallengeScore ChallengeScore;
 
-	// Not Challenge Mode
-	if (`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_ChallengeData', true) == none)
+	// Not Challenge or Ladder Mode
+	if (!class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( ))
 	{
 		return;
 	}
@@ -53,6 +53,7 @@ event string SummaryString( )
 {
 	return "Challenge Score Change";
 }
+
 defaultproperties
 {
 	AssociatedPlayTiming=SPT_AfterSequential

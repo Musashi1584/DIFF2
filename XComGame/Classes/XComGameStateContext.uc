@@ -303,7 +303,7 @@ function bool MergeRelativeToAssociatedVisBlock(X2Action BuildTree, out X2Action
 				}
 				else
 				{
-				VisualizationMgr.ConnectAction(BuildTree, VisualizationTree, false, None, BestNode.ParentActions);
+					VisualizationMgr.ConnectAction(BuildTree, VisualizationTree, false, None, BestNode.ParentActions);
 				}
 				break;
 			case SPT_BeforeSequential:

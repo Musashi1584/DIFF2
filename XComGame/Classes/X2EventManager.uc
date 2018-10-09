@@ -393,6 +393,8 @@ public:
 
 	FCriticalSection *GetCriticalSection();
 
+	virtual void AddReferencedObjects(TArray<UObject*>& ObjectArray);
+
 private:
 	// helper function to find the specific listener corresponding to the source object and eventID pair
 	FEventListener* FindExistingEventListener( const UObject& SourceObject, const FName& EventID, BYTE Deferral, const FScriptDelegate& Delegate );

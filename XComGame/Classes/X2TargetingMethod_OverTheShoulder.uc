@@ -64,8 +64,8 @@ private function AddTargetingCamera(Actor NewTargetActor, bool ShouldUseMidpoint
 
 		if( bShouldAddNewTargetingCameraToStack )
 		{
-		`CAMERASTACK.AddCamera(FiringUnit.TargetingCamera);
-	}
+			`CAMERASTACK.AddCamera(FiringUnit.TargetingCamera);
+		}
 
 		MidpointCamera.RecomputeLookatPointAndZoom(false);
 	}
@@ -75,7 +75,7 @@ private function AddTargetingCamera(Actor NewTargetActor, bool ShouldUseMidpoint
 		{
 			FiringUnit.TargetingCamera = new class'X2Camera_OTSTargeting';
 			bShouldAddNewTargetingCameraToStack = true;
-}
+		}
 
 		OTSCamera = X2Camera_OTSTargeting(FiringUnit.TargetingCamera);
 		OTSCamera.FiringUnit = FiringUnit;
@@ -84,16 +84,16 @@ private function AddTargetingCamera(Actor NewTargetActor, bool ShouldUseMidpoint
 		OTSCamera.ShouldHideUI = false;
 
 		if( bShouldAddNewTargetingCameraToStack )
-{
+		{
 			`CAMERASTACK.AddCamera(FiringUnit.TargetingCamera);
 		}
 
 		// add swoopy midpoint
 		if( !OTSCamera.ShouldBlend )
-	{
-		LookAtMidpointCamera = new class'X2Camera_MidpointTimed';
-		LookAtMidpointCamera.AddFocusActor(FiringUnit);
-		LookAtMidpointCamera.LookAtDuration = 0.0f;
+		{
+			LookAtMidpointCamera = new class'X2Camera_MidpointTimed';
+			LookAtMidpointCamera.AddFocusActor(FiringUnit);
+			LookAtMidpointCamera.LookAtDuration = 0.0f;
 			LookAtMidpointCamera.AddFocusPoint(OTSCamera.GetTargetLocation());
 			OTSCamera.PushCamera(LookAtMidpointCamera);
 		}
@@ -184,7 +184,7 @@ function DirectSetTarget(int TargetIndex)
 	NewTargetActor = GetTargetedActor();
 
 	AddTargetingCamera(NewTargetActor, ShouldUseMidpointCamera);
-	
+
 	// put the targeting reticle on the new target
 	TacticalHud = Pres.GetTacticalHUD();
 	TacticalHud.TargetEnemy(GetTargetedObjectID());

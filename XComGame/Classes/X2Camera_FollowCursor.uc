@@ -31,11 +31,11 @@ function Activated(TPOV CurrentPOV, X2Camera PreviousActiveCamera, X2Camera_Look
 		&& !ActiveUnit.ControllingPlayerIsAI()
 		&& ActiveUnit.ControllingPlayer == GetActivePlayer() )
 	{
-	Cursor = `CURSOR;
-	Cursor.RefreshUnitLocation();
-	LookAt = Cursor.Location;
-	PrevCursorLocation = LookAt;
-}
+		Cursor = `CURSOR;
+		Cursor.RefreshUnitLocation();
+		LookAt = Cursor.Location;
+		PrevCursorLocation = LookAt;
+	}
 }
 
 /// <summary>

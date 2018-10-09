@@ -215,6 +215,12 @@ static function SetUpCritUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_Shotgun_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_Shotgun_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_Shotgun_CV', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	
 }
 
 static function int GetCritBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -322,6 +328,16 @@ static function SetUpAimBonusUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
 	Template.AddUpgradeAttachment('Optic', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_AssaultRifle_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_AssaultRifle_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_AssaultRifle_CV', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_SniperRifle_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_SniperRifle_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+	Template.AddUpgradeAttachment('Optic', '', "", "", 'TLE_SniperRifle_CV', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_scope");
+
 }
 
 static function int GetAimBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -429,6 +445,10 @@ static function SetUpClipSizeBonusUpgrade(X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Mag', '', "", "", 'TLE_Cannon_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
+	Template.AddUpgradeAttachment('Mag', '', "", "", 'TLE_Cannon_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 }
 
 static function int GetClipSizeBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -587,6 +607,9 @@ static function SetUpFreeFireBonusUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Reargrip', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_trigger");
 	Template.AddUpgradeAttachment('Reargrip', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_trigger");
 	Template.AddUpgradeAttachment('Reargrip', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_trigger");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Trigger', '', "", "", 'TLE_Shotgun_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_trigger");
 }
 
 static function int GetFreeFireBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -704,6 +727,10 @@ static function SetUpReloadUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 	Template.AddUpgradeAttachment('Mag', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Mag', '', "", "", 'TLE_SniperRifle_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
+	Template.AddUpgradeAttachment('Mag', '', "", "", 'TLE_SniperRifle_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_clip");
 }
 
 static function int GetReloadBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -844,6 +871,11 @@ static function SetUpMissDamageUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Stock', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
 	Template.AddUpgradeAttachment('Stock', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
 	Template.AddUpgradeAttachment('Stock', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
+
+	//TLP Weapons
+	Template.AddUpgradeAttachment('Stock', '', "", "", 'TLE_Cannon_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
+	Template.AddUpgradeAttachment('Stock', '', "", "", 'TLE_Cannon_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
+	Template.AddUpgradeAttachment('Stock', '', "", "", 'TLE_Cannon_CV', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_stock");
 }
 
 static function int GetDamageBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)
@@ -970,6 +1002,11 @@ static function SetUpFreeKillUpgrade(out X2WeaponUpgradeTemplate Template)
 	Template.AddUpgradeAttachment('Suppressor', '', "", "", 'ChosenRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
 	Template.AddUpgradeAttachment('Suppressor', '', "", "", 'ChosenSniperRifle_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
 	Template.AddUpgradeAttachment('Suppressor', '', "", "", 'ChosenShotgun_XCOM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+
+	//TLP weapons
+	Template.AddUpgradeAttachment('Suppressor', '', "", "", 'TLE_AssaultRifle_BM', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', '', "", "", 'TLE_AssaultRifle_MG', , "", "", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+
 }
 
 static function int GetFreeKillBonusAmount(X2WeaponUpgradeTemplate UpgradeTemplate)

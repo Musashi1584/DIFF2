@@ -129,51 +129,25 @@ simulated function OnReadSaveGameListStarted()
 
 simulated function OnReadSaveGameListComplete(bool bWasSuccessful)
 {
+	local XComCheatManager XComCheat;
+	local bool FilterLadders;
+
 	if( bWasSuccessful )
 		`ONLINEEVENTMGR.GetSaveGames(m_arrSaveGames);
 	else
 		m_arrSaveGames.Remove(0, m_arrSaveGames.Length);
 
-	FilterSaveGameList();
+	XComCheat = XComCheatManager(GetALocalPlayerController().CheatManager);
+	FilterLadders = (XComCheat != none) ? !XComCheat.LoadMenuLaddersAllowed : true;
+	//class'X2TacticalGameRuleset'.static.ReleaseScriptLog( "Filtering Ladders:" @ FilterLadders @ "with CheatMgr:" @ XComCheat );
+
+	class'UILoadGame'.static.FilterSaveGameList( m_arrSaveGames, m_bBlockingSavesFromOtherLanguages, FilterLadders );
 	`ONLINEEVENTMGR.SortSavedGameListByTimestamp(m_arrSaveGames);		
 
 	BuildMenu();
 
 	// Close progress dialog
 	Movie.Stack.PopFirstInstanceOfClass(class'UIProgressDialogue', false);
-}
-
-simulated function FilterSaveGameList()
-{
-	local XComOnlineEventMgr OnlineEventMgr;
-	local int SaveGameIndex;
-	local int SaveGameID;
-	local bool RemoveSave;
-	local string CurrentLanguage;
-	local string SaveLanguage;
-
-	OnlineEventMgr = `ONLINEEVENTMGR;
-	CurrentLanguage = GetLanguage();
-	
-	SaveGameIndex = 0;
-	while( SaveGameIndex < m_arrSaveGames.Length )
-	{
-		RemoveSave = false;
-		SaveGameID = OnlineEventMgr.SaveNameToID(m_arrSaveGames[SaveGameIndex].Filename);
-
-		// Filter out save games made in other languages
-		if( m_bBlockingSavesFromOtherLanguages )
-		{
-			OnlineEventMgr.GetSaveSlotLanguage(SaveGameID, SaveLanguage);
-			if( CurrentLanguage != SaveLanguage )
-				RemoveSave = true;
-		}
-
-		if( RemoveSave )
-			m_arrSaveGames.Remove(SaveGameIndex, 1);
-		else
-			SaveGameIndex++;
-	}
 }
 
 simulated function OnSaveDeviceLost()

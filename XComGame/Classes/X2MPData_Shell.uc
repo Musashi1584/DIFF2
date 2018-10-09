@@ -87,7 +87,7 @@ struct TLeaderboardEntry
 	var int iScore;
 	var int iTime;
 	var int iPercentile;
-
+	
 	var int UninjuredSoldiers;
 	var int SoldiersAlive;
 	var int KilledEnemies;

@@ -1548,7 +1548,10 @@ simulated function InitDropshipUI()
 
 //This is called from the parcel mgr once it knows what our objective map is going to be
 function UpdateUIBriefingScreen(string ObjectiveMapName)
-{		
+{
+	if (class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode())
+		return; // no briefing audio in tactical game modes
+
 	MapImagePath = `MAPS.SelectMapImage(ObjectiveMapName);
 
 	StartDropshipNarrative();

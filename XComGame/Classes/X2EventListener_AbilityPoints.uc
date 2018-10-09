@@ -65,7 +65,7 @@ static protected function bool ShouldIgnoreEventCommon(X2AbilityPointTemplate AP
 		return true;
 
 	// ignore when in challenge mode
-	if (`XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_ChallengeData', true ) != none)
+	if (class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( ))
 		return true;
 
 	return false;

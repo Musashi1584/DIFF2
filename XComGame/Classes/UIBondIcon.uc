@@ -54,7 +54,7 @@ simulated function UIBondIcon SetBondLevel(int NewBondLevel, optional bool bNewO
 			RemoveTweens();
 			SetVisible(true);
 			SetAlpha(50);
-	}
+		}
 	}
 	else
 	{
@@ -62,7 +62,7 @@ simulated function UIBondIcon SetBondLevel(int NewBondLevel, optional bool bNewO
 	}
 	if( bNewOnMission ) //bOnMission will modify the alpha, so don't try to override it here. 
 	{
-	SetVisible(BondLevel > -1);
+		SetVisible(BondLevel > -1);
 	}
 	
 	if( !IsVisible() )

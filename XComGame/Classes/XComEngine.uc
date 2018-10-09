@@ -211,6 +211,8 @@ simulated function int ScriptDebugSyncFRand()
 	return SyncFRand("ScriptDebugSyncFRand");
 }
 
+native function bool IsLoadingAudioPlaying();
+
 cpptext
 {
 	virtual void Init();
@@ -255,6 +257,10 @@ cpptext
 	void CreatePhotoboothTextures();
 
 	void SendInitialTelemetry();
+
+	virtual void RenderExtraSubtitles();
+
+	virtual void ResetCharacterPool();		// called by LoadMap under dire, gonna crash circumstances
 }
 
 /**

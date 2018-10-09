@@ -8,6 +8,7 @@
 class X2ChallengeEnemyForces extends X2ChallengeTemplate;
 
 var localized string DisplayName;
+var localized string Description;
 
 var delegate<EnemyForcesSelector> SelectEnemyForcesFn;
 

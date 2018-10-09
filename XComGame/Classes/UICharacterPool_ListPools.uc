@@ -146,8 +146,8 @@ simulated function UpdateNavHelp()
 	if (`ISCONTROLLERACTIVE)
 	{
 		if(!bHasSelectedImportLocation || List.SelectedIndex > 0)
-		NavHelp.AddLeftHelp(class'UISaveLoadGameListItem'.default.m_sDeleteLabel, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
-}
+			NavHelp.AddLeftHelp(class'UISaveLoadGameListItem'.default.m_sDeleteLabel, class'UIUtilities_Input'.const.ICON_Y_TRIANGLE);
+	}
 }
 
 simulated function OnReceiveFocus()
@@ -222,9 +222,9 @@ simulated function DeleteCurrentlySelectedPool()
 	}
 	else
 	{
-	if (PoolToBeDeleted != INDEX_NONE)
-		OnConfirmDeletePool();
-}
+		if (PoolToBeDeleted != INDEX_NONE)
+			OnConfirmDeletePool();
+	}
 }
 
 simulated function OnDeletePool(UIButton Button)
@@ -263,10 +263,10 @@ simulated function OnConfirmDeletePool()
 
 	kTag = XGParamTag(`XEXPANDCONTEXT.FindTag("XGParam"));
 	kTag.StrValue0 = Data[PoolToBeDeleted];
-	
-	DialogData.strTitle	   = m_strDeletePoolDialogueTitle;
-	DialogData.strText     = `XEXPAND.ExpandString(m_strDeletePoolDialogueBody); 
-	DialogData.fnCallback  = OnConfirmDeletePoolCallback;
+
+	DialogData.strTitle = m_strDeletePoolDialogueTitle;
+	DialogData.strText = `XEXPAND.ExpandString(m_strDeletePoolDialogueBody);
+	DialogData.fnCallback = OnConfirmDeletePoolCallback;
 
 	DialogData.strAccept = class'UIUtilities_Text'.default.m_strGenericYes;
 	DialogData.strCancel = class'UIUtilities_Text'.default.m_strGenericNo;
@@ -309,7 +309,7 @@ simulated function bool OnUnrealCommand(int cmd, int arg)
 
 		case class'UIUtilities_Input'.const.FXS_BUTTON_Y :
 			if(!bHasSelectedImportLocation || List.SelectedIndex > 0)
-			DeleteCurrentlySelectedPool();
+				DeleteCurrentlySelectedPool();
 			return true;
 	}
 

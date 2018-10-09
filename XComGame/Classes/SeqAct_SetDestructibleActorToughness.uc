@@ -40,20 +40,20 @@ event Activated()
 			TargetDestructible.TotalHealth *= class'X2StrategyGameRulesetDataStructures'.default.SecondWaveBetaStrikeHealthMod;
 		}
 
-			if (PerserveHealthPercent)
-			{
-				TargetDestructible.Health = int(TargetDestructible.TotalHealth * fHealthPercentage);
+		if (PerserveHealthPercent)
+		{
+			TargetDestructible.Health = int(TargetDestructible.TotalHealth * fHealthPercentage);
 
-				// We don't want to accidentally interp the health of this actor below 1
-				if(TargetDestructible.Health < 1)
-				{
-					TargetDestructible.Health = 1;
-				}
-			}
-			else
+			// We don't want to accidentally interp the health of this actor below 1
+			if(TargetDestructible.Health < 1)
 			{
-				TargetDestructible.Health = TargetDestructible.TotalHealth;
+				TargetDestructible.Health = 1;
 			}
+		}
+		else
+		{
+			TargetDestructible.Health = TargetDestructible.TotalHealth;
+		}
 
 		if(!DoNotUpdateGamestate)
 		{

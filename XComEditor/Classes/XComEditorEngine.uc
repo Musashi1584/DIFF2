@@ -9,16 +9,14 @@ struct native NarrativeImportConfig
 	// associated resources
 	var string SoundCueColumn;
 	var string AKEventColumn;
-	var string LocFileNameColumn;
 	var string LipsyncAnimationNameColumn;
 
 	// character identifiers
 	var string CharacterNameColumn;
-	var string CharacterTemplateColumn;
 	var string CharacterGroupNameColumn;
 
 	var string ConversationLineIdxColumn; // place in conversation (optional)
-	var string EnlishDialogueColumn; // the dialogue (for use as subtitle)
+	var string EnglishDialogueColumn; // the dialogue (for use as subtitle)
 };
 
 var config array<string> FGDEClasses;

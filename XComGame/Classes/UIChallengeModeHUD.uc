@@ -14,6 +14,11 @@ class UIChallengeModeHUD extends UIScreen
 
 var bool WaitingOnBanner;
 
+var string SetScoreDirectFunction;
+var string SetCounterOffsetFunction;
+var string SetScoreFunction;
+var string TriggerBannerFunction;
+
 var localized string m_ScoreLabel;
 var localized string m_BannerLabels[ChallengeModePointType.EnumCount]<BoundEnum = ChallengeModePointType>;
 
@@ -46,7 +51,7 @@ simulated function OnInit( )
 		Show();
 	}
 
-	MC.BeginFunctionOp( "setChallengeScoreDirect" );
+	MC.BeginFunctionOp( SetScoreDirectFunction );
 	MC.QueueNumber( 0 );
 	MC.QueueString(m_ScoreLabel);
 	MC.EndOp( );
@@ -55,7 +60,7 @@ simulated function OnInit( )
 	Movie.ActionScriptVoid( Movie.Pres.GetUIComm( ).MCPath $ "." $ "AnchorToTopRight" );
 
 	sContainerPath = XComPresentationLayer( Movie.Pres ).GetSpecialMissionHUD( ).MCPath $ ".counters";
-	Movie.ActionScriptVoid(sContainerPath $ "." $ "setCounterChallengeOffset");
+	Movie.ActionScriptVoid(sContainerPath $ "." $ SetCounterOffsetFunction);
 	XComTacticalController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).HideInputButtonRelatedHUDElements(true);
 
 	//bsg-jneal (5.15.17): adding localized string for POINTS
@@ -147,19 +152,21 @@ simulated event Tick( float DeltaTime )
 
 function UpdateChallengeScore( ChallengeModePointType ScoringType, int AddedPoints )
 {
-	MC.BeginFunctionOp("setChallengeScore");
+	MC.BeginFunctionOp(SetScoreFunction);
 
 	MC.QueueString( m_ScoreLabel );
 	MC.QueueNumber( AddedPoints );
 	MC.QueueString( m_BannerLabels[ ScoringType ] );
 
 	MC.EndOp( );
+
+	WaitingOnBanner = true;
 }
 
 function TriggerChallengeBanner(  )
 {
 	WaitingOnBanner = true;
-	MC.FunctionVoid( "setChallengeBanner" );
+	MC.FunctionVoid( TriggerBannerFunction );
 }
 
 simulated function OnCommand( string cmd, string arg )
@@ -222,4 +229,9 @@ defaultproperties
 
 	WaitingOnBanner = false;
 	bAlwaysTick=true
+
+	SetScoreDirectFunction="setChallengeScoreDirect"
+	SetCounterOffsetFunction="setCounterChallengeOffset"
+	SetScoreFunction="setChallengeScore"
+	TriggerBannerFunction="setChallengeBanner"
 }

@@ -255,7 +255,7 @@ simulated function OnMouseEvent(int cmd, array<string> args)
 	{
 		if(args[args.Length - 1] == "theButton")
 		{
-			if(!isOpen)
+			if(isOpen)
 				Close();
 			else
 				Open();

@@ -83,7 +83,7 @@ simulated function OnInit()
 		SetChosenWarningPopup();
 		HQPRES().m_kAvengerHUD.NavHelp.ClearButtonHelp();
 	}
-
+	
 	if (ChosenLevelUpRefs.Length > 0)
 	{
 		HQPRES().m_kAvengerHUD.NavHelp.ClearButtonHelp();

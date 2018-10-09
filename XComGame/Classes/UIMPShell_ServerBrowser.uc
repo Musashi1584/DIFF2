@@ -218,6 +218,12 @@ function ServerListItemClicked(UIList listControl, int itemIndex)
 	m_iOnlineGameSearchResultIndex = UIServerBrowser_ListItem(listControl.GetItem(itemIndex)).metadataInt;
 }
 
+simulated function OnReceiveFocus()
+{
+	UpdateNavHelp();
+	super.OnReceiveFocus();
+}
+
 function JoinGame()
 {
 	local int iPoints;

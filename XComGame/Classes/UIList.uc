@@ -589,15 +589,15 @@ simulated function OnChildMouseEvent(UIPanel Control, int cmd)
 			SetSelectedIndex(GetItemIndex(Control));
 		}
 		break;
-	case class'UIUtilities_Input'.const.FXS_L_MOUSE_OUT:
-	case class'UIUtilities_Input'.const.FXS_L_MOUSE_DRAG_OUT:
+	case class'UIUtilities_Input'.const.FXS_L_MOUSE_OUT :
+	case class'UIUtilities_Input'.const.FXS_L_MOUSE_DRAG_OUT :
 		bUtilityItemSelected = false;
 		if( HasItem(Control) && !bStickyHighlight && !bStickyClickyHighlight )
 		{
 			bUtilityItemSelected = UISquadSelect_UtilityItem(GetSelectedItem()) != none;
 			SetSelectedIndex(INDEX_NONE);
 		}
-		if (HasItem(Control) && !bUtilityItemSelected && (bStickyHighlight || !bStickyClickyHighlight))
+		else if (HasItem(Control) && !bUtilityItemSelected && (bStickyHighlight || !bStickyClickyHighlight))
 		{
 			SetSelectedIndex(GetItemIndex(Control));
 		}

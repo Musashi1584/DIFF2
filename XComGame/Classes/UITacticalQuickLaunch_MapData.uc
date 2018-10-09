@@ -1115,6 +1115,24 @@ simulated function SelectSquad(int SelectionIndex)
 	}
 
 	ApplySquad(SelectedSquadMembers);
+
+	Movie.Pres.TacticalStartState = ExistingStartState;
+}
+
+static function GetSqaudMemberNames( Name SquadName, out array<Name> SquadMemberNames )
+{
+	local ConfigurableSquad Squad;
+
+	SquadMemberNames.Length = 0;
+
+	foreach default.Squads( Squad )
+	{
+		if (Squad.SquadID == SquadName)
+		{
+			SquadMemberNames = Squad.SoldierIDs;
+			return;
+		}
+	}
 }
 
 simulated function SelectChosenType(UIDropdown dropdown)
@@ -1222,18 +1240,52 @@ simulated function PopulateEnemiesDropdownData()
 
 native function SelectNSquadMembers(int N, out array<Name> SquadMembers);
 
-function ApplySquad(const out array<Name> SelectedSquadMembers)
+static function bool GetConfigurableSoldierSpec( name SoldierName, out ConfigurableSoldier SoldierData )
 {
-	local int SquadIndex, SoldierIndex;
+	local int SoldierIndex;
+
+	for (SoldierIndex = 0; SoldierIndex < default.Soldiers.Length; ++SoldierIndex)
+	{
+		if (default.Soldiers[SoldierIndex].SoldierID == SoldierName)
+		{
+			SoldierData = default.Soldiers[SoldierIndex];
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static function XComGameState_Unit ApplySoldier( name SoldierName, XComGameState StartState, XComGameState_Player TeamXComPlayer)
+{
+	local int SoldierIndex;
+
+	for( SoldierIndex = 0; SoldierIndex < default.Soldiers.Length; ++SoldierIndex )
+	{
+		if( default.Soldiers[SoldierIndex].SoldierID == SoldierName )
+		{
+			// Add this soldier's config as a new squad unit to the start state
+			return AddSoldierToGameState(SoldierIndex, StartState, TeamXComPlayer);
+		}
+	}
+}
+
+static function ApplySquad(const out array<Name> SelectedSquadMembers)
+{
+	local int SquadIndex;
 	local XComGameState_Player TeamXComPlayer;
+	local XComGameStateHistory LocalHistory;
+	local XComGameState StartState;
 
 	//Obliterate any previously added Units / Items
 	PurgeGameState( );
 
-	Movie.Pres.TacticalStartState = ExistingStartState;
+	LocalHistory = `XCOMHISTORY;
+	StartState = LocalHistory.GetStartState( );
+	`assert( StartState != none );
 
 	//Find the player associated with the player's team
-	foreach ExistingStartState.IterateByClassType(class'XComGameState_Player', TeamXComPlayer)
+	foreach StartState.IterateByClassType(class'XComGameState_Player', TeamXComPlayer)
 	{
 		if( TeamXComPlayer != None && TeamXComPlayer.TeamFlag == eTeam_XCom )
 		{
@@ -1243,28 +1295,21 @@ function ApplySquad(const out array<Name> SelectedSquadMembers)
 
 	for( SquadIndex = 0; SquadIndex < SelectedSquadMembers.Length; ++SquadIndex )
 	{
-		for( SoldierIndex = 0; SoldierIndex < Soldiers.Length; ++SoldierIndex )
-		{
-			if( Soldiers[SoldierIndex].SoldierID == SelectedSquadMembers[SquadIndex] )
-			{
-				// Add this soldier's config as a new squad unit to the start state
-				AddSoldierToGameState(SoldierIndex, ExistingStartState, TeamXComPlayer);
-				break;
-			}
-		}
+		ApplySoldier( SelectedSquadMembers[SquadIndex], StartState, TeamXComPlayer );
 	}
 }
 
-function AddSoldierToGameState(int SoldierIndex, XComGameState NewGameState, XComGameState_Player ControllingPlayer)
+static function XComGameState_Unit AddSoldierToGameState(int SoldierIndex, XComGameState NewGameState, XComGameState_Player ControllingPlayer)
 {
 	local XComGameState_Unit Unit;
 	local X2CharacterTemplate CharacterTemplate;
+	local XComGameState_HeadquartersXCom XComHQ;
 
-	CharacterTemplate = class'X2CharacterTemplateManager'.static.GetCharacterTemplateManager().FindCharacterTemplate(Soldiers[SoldierIndex].CharacterTemplate);
+	CharacterTemplate = class'X2CharacterTemplateManager'.static.GetCharacterTemplateManager().FindCharacterTemplate(default.Soldiers[SoldierIndex].CharacterTemplate);
 	if( CharacterTemplate == none )
 	{
-		`warn("CreateTemplatesFromCharacter: '" $ Soldiers[SoldierIndex].CharacterTemplate $ "' is not a valid template.");
-		return;
+		`warn("CreateTemplatesFromCharacter: '" $ default.Soldiers[SoldierIndex].CharacterTemplate $ "' is not a valid template.");
+		return none;
 	}
 
 	Unit = CharacterTemplate.CreateInstanceFromTemplate(NewGameState);
@@ -1274,7 +1319,7 @@ function AddSoldierToGameState(int SoldierIndex, XComGameState NewGameState, XCo
 	}
 
 	// Add Inventory
-	Unit.SetSoldierClassTemplate(Soldiers[SoldierIndex].SoldierClassTemplate); //Inventory needs this to work
+	Unit.SetSoldierClassTemplate(default.Soldiers[SoldierIndex].SoldierClassTemplate); //Inventory needs this to work
 	UpdateUnit(SoldierIndex, Unit, NewGameState); //needs to be before adding to inventory or 2nd util item gets thrown out
 	AddFullInventory(SoldierIndex, NewGameState, Unit);
 
@@ -1283,21 +1328,26 @@ function AddSoldierToGameState(int SoldierIndex, XComGameState NewGameState, XCo
 	{
 		Unit.ApplyInventoryLoadout(NewGameState, Unit.GetMyTemplate().RequiredLoadout);
 	}
+
+	XComHQ = XComGameState_HeadquartersXCom( `XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_HeadquartersXCom' ) );
+	XComHQ.Squad.AddItem( Unit.GetReference() );
+
+	return Unit;
 }
 
-simulated function AddFullInventory(int SoldierIndex, XComGameState GameState, XComGameState_Unit Unit)
+static simulated function AddFullInventory(int SoldierIndex, XComGameState GameState, XComGameState_Unit Unit)
 {
 	// Add inventory
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].PrimaryWeaponTemplate);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].SecondaryWeaponTemplate);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].ArmorTemplate);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].HeavyWeaponTemplate);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].GrenadeSlotTemplate);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].UtilityItem1Template);
-	AddItemToUnit(GameState, Unit, Soldiers[SoldierIndex].UtilityItem2Template);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].PrimaryWeaponTemplate);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].SecondaryWeaponTemplate);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].ArmorTemplate);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].HeavyWeaponTemplate);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].GrenadeSlotTemplate);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].UtilityItem1Template);
+	AddItemToUnit(GameState, Unit, default.Soldiers[SoldierIndex].UtilityItem2Template);
 }
 
-simulated function AddItemToUnit(XComGameState NewGameState, XComGameState_Unit Unit, name EquipmentTemplateName)
+static simulated function AddItemToUnit(XComGameState NewGameState, XComGameState_Unit Unit, name EquipmentTemplateName)
 {
 	local XComGameState_Item ItemInstance;
 	local X2EquipmentTemplate EquipmentTemplate;
@@ -1313,7 +1363,7 @@ simulated function AddItemToUnit(XComGameState NewGameState, XComGameState_Unit 
 	}
 }
 
-simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGameState UseGameState)
+static simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGameState UseGameState)
 {
 	local TSoldier Soldier;
 	local XGCharacterGenerator CharacterGenerator;
@@ -1325,14 +1375,15 @@ simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGam
 	local array<SoldierClassAbilityType> AbilityTree;
 	local X2SoldierClassTemplate UnitSoldierClassTemplate;
 	local string RedScreenMsg;
+	local X2CharacterTemplate CharTemplate;
 
 	CharacterPool = `CHARACTERPOOLMGR;
 
 	if( Unit.IsSoldier() )
 	{
-		if( Soldiers[SoldierIndex].CharacterPoolSelection > 0 )
+		if( default.Soldiers[SoldierIndex].CharacterPoolSelection > 0 )
 		{
-			CharacterPoolUnit = CharacterPool.CharacterPool[Soldiers[SoldierIndex].CharacterPoolSelection - 1];
+			CharacterPoolUnit = CharacterPool.CharacterPool[default.Soldiers[SoldierIndex].CharacterPoolSelection - 1];
 
 			CharacterGenerator = `XCOMGRI.Spawn(CharacterPoolUnit.GetMyTemplate().CharacterGeneratorClass);
 			//Generate a charater of the proper gender and race
@@ -1348,8 +1399,22 @@ simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGam
 		}
 		else
 		{
-			CharacterGenerator = `XCOMGRI.Spawn(Unit.GetMyTemplate().CharacterGeneratorClass);
-			Soldier = CharacterGenerator.CreateTSoldierFromUnit(Unit, UseGameState);
+			CharTemplate = Unit.GetMyTemplate( );
+
+			if (CharTemplate.bHasFullDefaultAppearance)
+			{
+				Soldier.kAppearance = CharTemplate.DefaultAppearance;
+				Soldier.nmCountry = CharTemplate.DefaultAppearance.nmFlag;
+
+				Soldier.strFirstName = CharTemplate.strForcedFirstName;
+				Soldier.strLastName = CharTemplate.strForcedLastName;
+				Soldier.strNickName = CharTemplate.strForcedNickName;
+			}
+			else
+			{
+				CharacterGenerator = `XCOMGRI.Spawn(Unit.GetMyTemplate().CharacterGeneratorClass);
+				Soldier = CharacterGenerator.CreateTSoldierFromUnit(Unit, UseGameState);
+			}
 		}
 		CharacterGenerator.Destroy();
 
@@ -1357,11 +1422,11 @@ simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGam
 		Unit.SetCharacterName(Soldier.strFirstName, Soldier.strLastName, Soldier.strNickName);
 		Unit.SetCountry(Soldier.nmCountry);
 
-		Unit.SetSoldierClassTemplate(Soldiers[SoldierIndex].SoldierClassTemplate);
+		Unit.SetSoldierClassTemplate(default.Soldiers[SoldierIndex].SoldierClassTemplate);
 		Unit.ResetSoldierRank();
-		for( Index = 0; Index < Soldiers[SoldierIndex].SoldierRank; ++Index )
+		for( Index = 0; Index < default.Soldiers[SoldierIndex].SoldierRank; ++Index )
 		{
-			Unit.RankUpSoldier(UseGameState, Soldiers[SoldierIndex].SoldierClassTemplate);
+			Unit.RankUpSoldier(UseGameState, default.Soldiers[SoldierIndex].SoldierClassTemplate);
 		}
 
 		UnitSoldierClassTemplate = Unit.GetSoldierClassTemplate();
@@ -1371,19 +1436,19 @@ simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGam
 			AbilityTree = Unit.GetRankAbilities(Progression.iRank);
 			for( Progression.iBranch = 0; Progression.iBranch < AbilityTree.Length; ++Progression.iBranch )
 			{
-				if( Soldiers[SoldierIndex].EarnedClassAbilities.Find(AbilityTree[Progression.iBranch].AbilityName) != INDEX_NONE )
+				if( default.Soldiers[SoldierIndex].EarnedClassAbilities.Find(AbilityTree[Progression.iBranch].AbilityName) != INDEX_NONE )
 				{
 					SoldierProgression.AddItem(Progression);
 				}
 			}
 		}
 
-		if( Soldiers[SoldierIndex].EarnedClassAbilities.Length != SoldierProgression.Length )
+		if( default.Soldiers[SoldierIndex].EarnedClassAbilities.Length != SoldierProgression.Length )
 		{
-			RedScreenMsg = "Soldier '" $ Soldiers[SoldierIndex].SoldierID $ "' has invalid ability definition: \n-> Configured Abilities:";
-			for( Index = 0; Index < Soldiers[SoldierIndex].EarnedClassAbilities.Length; ++Index )
+			RedScreenMsg = "Soldier '" $ default.Soldiers[SoldierIndex].SoldierID $ "' has invalid ability definition: \n-> Configured Abilities:";
+			for( Index = 0; Index < default.Soldiers[SoldierIndex].EarnedClassAbilities.Length; ++Index )
 			{
-				RedScreenMsg = RedScreenMsg $ "\n\t" $ Soldiers[SoldierIndex].EarnedClassAbilities[Index];
+				RedScreenMsg = RedScreenMsg $ "\n\t" $ default.Soldiers[SoldierIndex].EarnedClassAbilities[Index];
 			}
 			RedScreenMsg = RedScreenMsg $ "\n-> Selected Abilities:";
 			for( Index = 0; Index < SoldierProgression.Length; ++Index )
@@ -1405,7 +1470,7 @@ simulated function UpdateUnit(int SoldierIndex, XComGameState_Unit Unit, XComGam
 }
 
 // Purge the GameState of any XComGameState_Unit or XComGameState_Item objects
-function PurgeGameState( )
+static function PurgeGameState( )
 {
 	local int i;
 	local array<int> arrObjectIDs;
@@ -1413,6 +1478,7 @@ function PurgeGameState( )
 	local XComGameState_Item Item;
 	local XComGameStateHistory LocalHistory;
 	local XComGameState StartState;
+	local XComGameState_HeadquartersXCom XComHQ;
 
 	LocalHistory = `XCOMHISTORY;
 	StartState = LocalHistory.GetStartState( );
@@ -1433,6 +1499,9 @@ function PurgeGameState( )
 	{
 		LocalHistory.PurgeObjectIDFromStartState(arrObjectIDs[i], FALSE);
 	}
+
+	XComHQ = XComGameState_HeadquartersXCom( LocalHistory.GetSingleGameStateObjectForClass( class'XComGameState_HeadquartersXCom' ) );
+	XComHQ.Squad.Length = 0;
 
 	LocalHistory.UpdateStateObjectCache( );
 }

@@ -262,13 +262,22 @@ function array<X2ItemTemplate> GetBuildableItemTemplates()
 	return arrBuildTemplates;
 }
 
-function bool GetItemStatBoost(int PowerLevel, ECharStatType StatType, out StatBoost ItemStatBoost)
+function bool GetItemStatBoost(int PowerLevel, ECharStatType StatType, out StatBoost ItemStatBoost, optional bool bMaxBoost = false)
 {
 	local int idx;
 
 	for(idx = 0; idx < StatBoostTable.Length; idx++)
 	{
-		if(StatBoostTable[idx].PowerLevel == PowerLevel && StatBoostTable[idx].StatType == StatType)
+		if (bMaxBoost) // skirmish mode uses negative power and wants max boost
+		{
+			if (StatBoostTable[idx].PowerLevel == PowerLevel && StatBoostTable[idx].StatType == StatType)
+			{
+				ItemStatBoost.StatType = StatBoostTable[idx].StatType;
+				ItemStatBoost.Boost = StatBoostTable[idx].MaxBoost;
+				return true;
+			}
+		}
+		else if(StatBoostTable[idx].PowerLevel == PowerLevel && StatBoostTable[idx].StatType == StatType)
 		{
 			ItemStatBoost.StatType = StatBoostTable[idx].StatType;
 			ItemStatBoost.Boost = StatBoostTable[idx].MinBoost + 

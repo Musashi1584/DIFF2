@@ -751,7 +751,7 @@ simulated protected function UpdateAttachmentLocations( )
 			continue;
 		}
 
-		if (m_PerkData.TargetAttachmentSocket != '')
+		if ((m_PerkData.TargetAttachmentSocket != '') && (TargetPawn.Mesh.GetSocketByName( m_PerkData.TargetAttachmentSocket ) != none))
 		{
 			TargetPawn.Mesh.GetSocketWorldLocationAndRotation( m_PerkData.TargetAttachmentSocket, AttachLocation );
 		}

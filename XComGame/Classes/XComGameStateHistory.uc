@@ -308,6 +308,7 @@ native final function AddGameStateToHistory(XComGameState NewGameState);
 /// </summary>
 /// <param name="Count">Number of states to pop from the history.</param>
 native final function ObliterateGameStatesFromHistory(optional int Count = 1);
+native final function ReduceToStartState( );
 
 /// <summary>
 /// GetFrame returns the game state at the specified HistoryFrame. Depending on the DesiredReturnType parameter the returned game state could be a copy or a reference. If the
@@ -471,7 +472,7 @@ native final function bool ReadHistoryFromFile(string RelativePath, string Filen
 /// </summary>
 /// <param name="RelativePath">Specifies a relative path from the game's root directory, appGameDir()</param>
 /// <param name="Filename">Name of the file that will hold the history data</param>
-native final function WriteHistoryToFile(string RelativePath, string Filename);
+native final function bool WriteHistoryToFile(string RelativePath, string Filename);
 
 /// <summary>
 /// Returns a string representation of this object.
@@ -506,6 +507,8 @@ native function CheckNoPendingGameStates(optional XComGameState NewGameState);
 /// Resubmits input contexts of a replay history to enusre it regenerates the same game states for verification.
 /// </summary>
 native function bool ValidateHistory();
+
+native function array<Actor> GetAllVisualizers( ) const;
 
 DefaultProperties
 {	

@@ -86,6 +86,14 @@ simulated function InitScreen(XComPlayerController InitController, UIMovie InitM
 	NavHelp = Spawn(class'UINavigationHelp', self).InitNavHelp();
 	UpdateNavHelp();
 	//bsg-crobinson (5.4.17): end
+
+	// Disable the 'load a save' button when failing a ladder rung
+	if (`XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ) != none) 
+	{
+		Button1.Hide( );
+	}
+
+	`XTACTICALSOUNDMGR.PlayPersistentSoundEvent("Play_MissionLoseMusic");
 }
 
 //----------------------------------------------------------------------------

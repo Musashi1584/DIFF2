@@ -154,6 +154,7 @@ event OnCreation(optional X2DataTemplate Template)
 	local X2WeaponTemplate WeaponTemplate;
 	local StatBoost ItemStatBoost;
 	local int idx;
+	local bool bInSkirmish;
 
 	super.OnCreation(Template);
 
@@ -168,9 +169,11 @@ event OnCreation(optional X2DataTemplate Template)
 	{
 		ItemManager = GetMyTemplateManager();
 
+		bInSkirmish = `SCREENSTACK.GetFirstInstanceOf(class'UITLE_SkirmishModeMenu') != none;
+
 		for(idx = 0; idx < EquipmentTemplate.StatsToBoost.Length; idx++)
 		{
-			if(ItemManager.GetItemStatBoost(EquipmentTemplate.StatBoostPowerLevel, EquipmentTemplate.StatsToBoost[idx], ItemStatBoost))
+			if(ItemManager.GetItemStatBoost(EquipmentTemplate.StatBoostPowerLevel, EquipmentTemplate.StatsToBoost[idx], ItemStatBoost, bInSkirmish))
 			{
 				StatBoosts.AddItem(ItemStatBoost);
 			}
@@ -727,7 +730,17 @@ simulated function WipeUpgradeTemplates()
 
 simulated function bool HasBeenModified()
 {
-	return Nickname != "" || GetMyWeaponUpgradeTemplateNames().Length > 0;
+	local X2WeaponTemplate WeaponTemplate;
+
+	if (Nickname != "")
+		return true;
+
+	WeaponTemplate = X2WeaponTemplate( m_ItemTemplate );
+
+	if ((WeaponTemplate != none) && (WeaponTemplate.NumUpgradeSlots > 0) && (GetMyWeaponUpgradeTemplateNames().Length > 0))
+		return true;
+
+	return false;
 }
 
 simulated function bool IsStartingItem()

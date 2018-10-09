@@ -35,12 +35,12 @@ function bool HasChanged()
 		bHasChanged = m_lastQueryValue != m_value;
 	}
 
-		if(bHasChanged)
-		{
-			m_lastQueryValue = m_value;
-		}
+	if(bHasChanged)
+	{
+		m_lastQueryValue = m_value;
+	}
 
-		return bHasChanged;
+	return bHasChanged;
 }
 
 

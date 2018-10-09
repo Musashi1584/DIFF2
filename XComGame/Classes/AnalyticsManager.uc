@@ -1235,6 +1235,28 @@ static function EventListenerReturn OnUnitPromotion( Object EventData, Object Ev
 	return ELR_NoInterrupt;
 }
 
+static function EventListenerReturn ChallengeScoreChange( Object EventData, Object EventSource, XComGameState GameState, Name Event, Object CallbackData )
+{
+	local XComGameState_Analytics AnalyticsObject;
+	local XComGameStateHistory History;
+
+	if (SkipAddAnalyticObject( GameState ))
+	{
+		return ELR_NoInterrupt;
+	}
+
+	History = `XCOMHISTORY;
+
+	// check if we have analytics object
+	AnalyticsObject = XComGameState_Analytics( History.GetSingleGameStateObjectForClass( class'XComGameState_Analytics', true ) );
+	if (AnalyticsObject != none)
+	{
+		AnalyticsObject.ChallengeScoreChange( GameState );
+	}
+
+	return ELR_NoInterrupt;
+}
+
 static function SendGameStartTelemetry( XComGameStateHistory History, bool IronmanEnabled )
 {
 	local int Difficulty;

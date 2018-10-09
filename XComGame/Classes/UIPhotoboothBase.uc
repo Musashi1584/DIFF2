@@ -46,6 +46,7 @@ var localized string m_strRotCam;
 //bsg-jedwards (3.22.17) : end
 
 var bool bChallengeMode;
+var bool bLadderMode;
 
 var bool bHasTakenPicture; //bgs-hlee (05.15.17): Checks to see if a picture has been taken or not.
 
@@ -339,6 +340,8 @@ simulated function InitScreen(XComPlayerController InitController, UIMovie InitM
 	InitGameIndex();
 
 	m_iDefaultListIndex = 0; //bsg-jneal (5.23.17): saving default list index for better nav
+
+	bLadderMode = `XCOMHISTORY.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ) != none;
 }
 
 simulated function OnInit()
@@ -787,9 +790,9 @@ function SoldierPawnCreated()
 	default:
 		autoText = ePBAT_SQUAD;
 		break;
-}
-
-	`PHOTOBOOTH.SetAutoTextStrings(autoText, ePBTLS_Auto);
+	}
+	if(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress') == none)
+		`PHOTOBOOTH.SetAutoTextStrings(autoText, ePBTLS_Auto);
 }
 
 function SetSoldier(int LocationIndex, int SoldierIndex)
@@ -1053,7 +1056,7 @@ function int SetRandomAnimationPoseForSoldier(int LocationIndex, optional bool b
 	AnimationIndex = 0;
 	if (LocationIndex >= 0 && LocationIndex < `PHOTOBOOTH.m_arrUnits.Length && `PHOTOBOOTH.m_arrUnits[locationIndex].UnitRef.ObjectID > 0)
 	{
-		`PHOTOBOOTH.GetAnimations(LocationIndex, arrOrigAnimations, , DefaultSetupSettings.TextLayoutState == ePBTLS_DeadSoldier);
+		`PHOTOBOOTH.GetAnimations(LocationIndex, arrOrigAnimations, , DefaultSetupSettings.TextLayoutState == ePBTLS_DeadSoldier, true);
 
 		Rolls = bPreventDuplicates ? 100 : 1;
 		while (--Rolls >= 0)
@@ -1752,6 +1755,10 @@ function PopulateGraphicsList(out int Index)
 			break;
 		}
 		GetListItem(Index++).UpdateDataDescription(m_PrefixTextBox @ i + 1 @ `PHOTOBOOTH.m_PosterStrings[i], UpdateTextBox);
+
+		if (bLadderMode)
+			GetListItem( Index - 1 ).SetDisabled( true );
+
 		GetListItem(Index++).UpdateDataColorChip(m_PrefixTextBoxColor @ i + 1 , `PHOTOBOOTH.m_FontColors[`PHOTOBOOTH.m_PosterStringColors[i]], OnChooseTextColorDel);
 		GetListItem(Index++).UpdateDataValue(m_PrefixTextBoxFont @ i + 1, FontNames[i], OnChooseTextFontDel);
 		//GetListItem(Index++).UpdateDataSlider(m_PrefixTextBoxFont @ i + 1, m_PrefixTextBoxFont @ i + 1, `PHOTOBOOTH.m_FontSize[i], , UpdateTextSize);
@@ -2296,7 +2303,7 @@ function bool UpdateRandom()
 		{
 			`PHOTOBOOTH.SetAutoTextStrings(ePBAT_SOLO, DefaultSetupSettings.TextLayoutState, DefaultSetupSettings);
 		}
-		else if(!bChallengeMode)
+		else if(!bChallengeMode && !bLadderMode)
 		{
 			`PHOTOBOOTH.AutoGenTextLayout();
 		}
@@ -2391,7 +2398,7 @@ function bool UpdateReset()
 		}
 		else
 		{
-		`PHOTOBOOTH.SetBackgroundTexture(DefaultSetupSettings.BackgroundDisplayName);
+			`PHOTOBOOTH.SetBackgroundTexture(DefaultSetupSettings.BackgroundDisplayName);
 			`PHOTOBOOTH.SetBackgroundColorOverride(DefaultSetupSettings.bBackgroundTinting);
 		}
 
@@ -2832,4 +2839,5 @@ defaultproperties
 	bDestroyPhotoboothPawnsOnCleanup = true
 
 	bChallengeMode = false
+	bLadderMode = false
 }

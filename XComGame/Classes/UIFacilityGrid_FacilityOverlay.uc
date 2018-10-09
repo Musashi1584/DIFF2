@@ -676,7 +676,7 @@ simulated function UpdateFacility()
 	kData.iBackDropAlpha = -1;
 
 	kData.StaffIcons = GetStaffIconData(Facility);
-
+	
 	if( IsBuildMode() )
 	{
 		kData.strTitle = GetFacility().GetMyTemplate().DisplayName;
@@ -1285,7 +1285,7 @@ simulated function UIPanel SetSize(float NewWidth, float NewHeight)
 function array<EUIStaffIconType> GetStaffIconData(XComGameState_FacilityXCom Facility)
 {
 	local XComGameState_StaffSlot StaffSlot;
-	local int i; 
+	local int i;
 	local array<EUIStaffIconType> NewIcons;
 
 	if( Facility.DisplayStaffingInfo() )
@@ -1301,33 +1301,33 @@ function array<EUIStaffIconType> GetStaffIconData(XComGameState_FacilityXCom Fac
 						NewIcons.AddItem(eUIFG_Science);
 					else
 						NewIcons.AddItem(eUIFG_ScienceEmpty);
-}
+				}
 				else if( StaffSlot.IsSoldierSlot() )
-{
+				{
 					if( Facility.GetMyTemplateName() == 'PsiChamber' )
 					{
 						if( StaffSlot.IsSlotFilled() )
 							NewIcons.AddItem(eUIFG_PsiSoldier);
 						else
 							NewIcons.AddItem(eUIFG_PsiSoldierEmpty);
-}
+					}
 					else
-{
+					{
 						if( StaffSlot.IsSlotFilled() )
 							NewIcons.AddItem(eUIFG_Soldier);
 						else
 							NewIcons.AddItem(eUIFG_SoldierEmpty);
-}
+					}
 				}
 				else if( StaffSlot.IsEngineerSlot() )
-{
+				{
 					if( StaffSlot.IsSlotFilled() )
 						NewIcons.AddItem(eUIFG_Engineer);
 					else
 						NewIcons.AddItem(eUIFG_EngineerEmpty);
-}
+				}
 				else
-{
+				{
 					if( StaffSlot.IsSlotFilled() )
 						NewIcons.AddItem(eUIFG_GenericStaff);
 					else
@@ -1352,11 +1352,11 @@ function array<EUIStaffIconType> GetStaffIconDataForClearingSlots()
 	for( i = 0; i < numSlotsFilled; i++ )
 	{
 		NewIcons.AddItem(eUIFG_Engineer);
-}
+	}
 	//------------------------------------------------
 	numSlotsEmpty = Room.GetNumEmptyBuildSlots();
 	for( i = 0; i < numSlotsEmpty; i++ )
-{
+	{
 		NewIcons.AddItem(eUIFG_EngineerEmpty);
 	}
 	//------------------------------------------------

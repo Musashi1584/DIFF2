@@ -1480,6 +1480,7 @@ event bool PlayParticleEffect( const AnimNotify_PlayParticleEffect AnimNotifyDat
 				AttachComponent( PSC, AnimNotifyData.BoneName );
 			}
 
+			PSC.SetRenderChannels(RenderChannels);
 			PSC.ActivateSystem(true);
 			PSC.OnSystemFinished = SkelMeshCompOnParticleSystemFinished;
 		}

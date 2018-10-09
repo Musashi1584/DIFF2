@@ -1283,7 +1283,7 @@ function MergeGroupMoveVisualization(X2Action BuildTree, out X2Action Visualizat
 	{
 		m_mergeGroupMoveVizStage = 'GroupBeginMarkerAction ne none';
 
-			SyncAction = X2Action_MarkerNamed(GroupBeginMarkerAction.ChildActions[0]);			
+		SyncAction = X2Action_MarkerNamed(GroupBeginMarkerAction.ChildActions[0]);			
 
 		if( SyncAction == none )
 		{

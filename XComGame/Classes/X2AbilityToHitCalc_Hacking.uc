@@ -38,11 +38,13 @@ static function int GetHackAttackForUnit(XComGameState_Unit Hacker, XComGameStat
 	local XComGameState_Item SourceWeapon;
 	local X2GremlinTemplate GremlinTemplate;
 	local int HackAttack;
+	local bool IncludeHackBonus;
 
 	HackAttack = Hacker.GetCurrentStat(eStat_Hacking);
 
 	// when the skullmining tech is researched, carrying the skulljack confers a bonus to hacking
-	if( Hacker.HasItemOfTemplateType('SKULLJACK') && `XCOMHQ.IsTechResearched('Skullmining') )
+	IncludeHackBonus = `XCOMHQ.IsTechResearched('Skullmining') || class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( );
+	if( Hacker.HasItemOfTemplateType('SKULLJACK') && IncludeHackBonus )
 	{
 		HackAttack += default.SKULLJACK_HACKING_BONUS;
 	}

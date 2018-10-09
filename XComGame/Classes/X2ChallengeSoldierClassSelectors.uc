@@ -37,6 +37,9 @@ static function array<X2DataTemplate> CreateTemplates( )
 	Templates.AddItem(CreateSplitSpecialistGrenadierSelector());
 	Templates.AddItem(CreateSplitRangerSharpshooterSelector());
 
+	// TLE class selector
+	Templates.AddItem( CreateTLERandomSelector() );
+
 	return Templates;
 }
 
@@ -371,6 +374,27 @@ static function X2ChallengeSoldierClass CreateSplitRangerSharpshooterSelector()
 static function array<name> SplitRangerSharpshooterSelector(X2ChallengeSoldierClass Selector, int count)
 {
 	return SplitClassSelector('Ranger', 'Sharpshooter', count);
+}
+//--------------------------------------------------------------------------------------
+static function X2ChallengeSoldierClass CreateTLERandomSelector()
+{
+	local X2ChallengeSoldierClass	Template;
+
+	`CREATE_X2TEMPLATE(class'X2ChallengeSoldierClass', Template, 'TLESoldiersRandom');
+
+	Template.Weight = 0;
+
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Sharpshooter', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Grenadier', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Specialist', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Ranger', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'PsiOperative', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Reaper', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Templar', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Skirmisher', 1 ) );
+	Template.WeightedSoldierClasses.AddItem( CreateEntry( 'Spark', 1 ) );
+
+	return Template;
 }
 
 //---------------------------------------------------------------------------------------

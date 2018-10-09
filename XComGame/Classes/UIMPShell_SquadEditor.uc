@@ -171,7 +171,7 @@ function UpdateNavHelp()
 		NavHelp.AddSelectNavHelp();
 		if(m_bAddRightNavButton)
 		{
-		NavHelp.AddRightHelp(Caps(m_strReadyButtonText), class'UIUtilities_Input'.const.ICON_X_SQUARE, EditorReadyButtonCallback);
+			NavHelp.AddRightHelp(Caps(m_strReadyButtonText), class'UIUtilities_Input'.const.ICON_X_SQUARE, EditorReadyButtonCallback);
 		}
 		
 		if (m_kSlotList != None && m_kSlotList.GetSelectedItem() != None)
@@ -189,9 +189,9 @@ function UpdateNavHelp()
 		NavHelp.AddCenterHelp(Caps(class'UIPauseMenu'.default.m_sSaveAndExitGame), "",SaveAndExitCallback);
 		if(m_bAddRightNavButton)
 		{
-		NavHelp.AddRightHelp(Caps(m_strReadyButtonText), "", EditorReadyButtonCallback);
+			NavHelp.AddRightHelp(Caps(m_strReadyButtonText), "", EditorReadyButtonCallback);
+		}
 	}
-}
 }
 
 function InitSquadCostPanels()

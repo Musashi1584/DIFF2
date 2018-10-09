@@ -21,20 +21,20 @@ simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffe
 	//regular enemies sometimes gaining extra moves.
 	if (UnitState.GetTeam() == eTeam_TheLost || UnitState.IsChosen())
 	{
-	for (Point = 0; Point < SetActionPointCount; ++Point)
-	{
-		if (Point < UnitState.ActionPoints.Length)
+		for (Point = 0; Point < SetActionPointCount; ++Point)
 		{
-			if (UnitState.ActionPoints[Point] != class'X2CharacterTemplateManager'.default.StandardActionPoint)
+			if (Point < UnitState.ActionPoints.Length)
 			{
-				UnitState.ActionPoints[Point] = class'X2CharacterTemplateManager'.default.StandardActionPoint;
+				if (UnitState.ActionPoints[Point] != class'X2CharacterTemplateManager'.default.StandardActionPoint)
+				{
+					UnitState.ActionPoints[Point] = class'X2CharacterTemplateManager'.default.StandardActionPoint;
+				}
+			}
+			else
+			{
+				UnitState.ActionPoints.AddItem(class'X2CharacterTemplateManager'.default.StandardActionPoint);
 			}
 		}
-		else
-		{
-			UnitState.ActionPoints.AddItem(class'X2CharacterTemplateManager'.default.StandardActionPoint);
-		}
-	}
 	}
 
 	// Kick off the behavior tree.

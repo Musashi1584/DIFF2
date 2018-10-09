@@ -875,6 +875,11 @@ simulated state _DamageStarted extends _DamageState
 
 		PreTriggerEvents( DamagedEvents );
 	}
+
+	simulated event TriggerActionRespones( ) // trigger state actions that may want to submit new gamestates
+	{
+		ResponseTriggerEvents( DamagedEvents );
+	}
 }
 
 simulated state _Damaged extends _DamageState
@@ -903,11 +908,6 @@ simulated state _Damaged extends _DamageState
 	simulated event EndState(Name NextStateName)
 	{
 		CleanupEvents(DamagedEvents);
-	}
-
-	simulated event TriggerActionRespones( ) // trigger state actions that may want to submit new gamestates
-	{
-		ResponseTriggerEvents( DamagedEvents );
 	}
 }
 

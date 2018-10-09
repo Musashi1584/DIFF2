@@ -57,7 +57,7 @@ function CreateState(XComGameState StartGameState)
 	}
 
 	// don't include these when building challenge mode maps.
-	if (History.GetSingleGameStateObjectForClass(class'XComGameState_ChallengeData', true) != none)
+	if (class'X2TacticalGameRulesetDataStructures'.static.TacticalOnlyGameMode( ))
 	{
 		return;
 	}

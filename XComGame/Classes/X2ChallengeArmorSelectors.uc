@@ -29,6 +29,9 @@ static function array<X2DataTemplate> CreateTemplates()
 	Templates.AddItem(CreateHeavyPlatedArmor());
 	Templates.AddItem(CreateHeavyPoweredArmor());
 
+	// TLE Selector
+	Templates.AddItem(CreateTLEArmor());
+
 	return Templates;
 }
 
@@ -399,6 +402,48 @@ static function HeavyPoweredArmorSelector(X2ChallengeArmor Selector, array<XComG
 		}
 
 		class'X2ChallengeArmor'.static.ApplyArmor(ArmorTemplateName, Unit, StartState);
+	}
+}
+
+static function X2ChallengeArmor CreateTLEArmor( )
+{
+	local X2ChallengeArmor	Template;
+
+	`CREATE_X2TEMPLATE(class'X2ChallengeArmor', Template, 'TLEArmor');
+
+	Template.Weight = 0;
+	Template.SelectArmorFn = TLEArmorSelector;
+
+	return Template;
+}
+
+//---------------------------------------------------------------------------------------
+static function TLEArmorSelector( X2ChallengeArmor Selector, array<XComGameState_Unit> XComUnits, XComGameState StartState )
+{
+	local XComGameState_Unit Unit;
+	local name ArmorTemplateName;
+
+	foreach XComUnits( Unit )
+	{
+		switch (Unit.GetSoldierClassTemplateName( ))
+		{
+			case 'Reaper':
+				ArmorTemplateName = 'PlatedReaperArmor';
+				break;
+			case 'Templar':
+				ArmorTemplateName = 'PlatedTemplarArmor';
+				break;
+			case 'Skirmisher':
+				ArmorTemplateName = 'PlatedSkirmisherArmor';
+				break;
+			case 'Spark':
+				ArmorTemplateName = 'PlatedSparkArmor';
+				break;
+			default:
+				ArmorTemplateName = 'MediumPlatedArmor';
+		}
+
+		class'X2ChallengeArmor'.static.ApplyArmor( ArmorTemplateName, Unit, StartState );
 	}
 }
 

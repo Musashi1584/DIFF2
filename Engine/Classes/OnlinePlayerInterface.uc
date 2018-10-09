@@ -1003,34 +1003,63 @@ function EOnlineEnumerationReadState GetAchievements(byte LocalUserNum,out array
 
 
 /**
-* Sends a request to the subsystem to return the current name for the specified player id.
-*
-* @param LocalUserNum local player index
-* @param PlayerId retrieves the name for this unique player identifier
-*
-* @return TRUE if the request fires off, FALSE if it failed
-*/
+ * Sends a request to the subsystem to return the current name for the specified player id.
+ *
+ * @param LocalUserNum local player index
+ * @param PlayerId retrieves the name for this unique player identifier
+ *
+ * @return TRUE if the request fires off, FALSE if it failed
+ */
 function bool RequestUserInformation(byte LocalUserNum, UniqueNetId PlayerId);
 
 /**
-* Delegate is called when the user information comes back and name is available
-*
-* @param bWasSuccessful true if the async action completed without error, false if there was an error
-* @param PlayerId the player id associated with the information retrieval
-* @param PlayerName the looked-up name for the given player id
-*/
+ * Delegate is called when the user information comes back and name is available
+ *
+ * @param bWasSuccessful true if the async action completed without error, false if there was an error
+ * @param PlayerId the player id associated with the information retrieval
+ * @param PlayerName the looked-up name for the given player id
+ */
 delegate OnRequestUserInformationComplete(bool bWasSuccessful, UniqueNetId PlayerId, string PlayerName);
 
 /**
-* Adds the delegate used to notify the gameplay code that user information has been retrieved
-*
-* @param RequestUserInformationDelegate the delegate to use for notifications
-*/
+ * Adds the delegate used to notify the gameplay code that user information has been retrieved
+ *
+ * @param RequestUserInformationDelegate the delegate to use for notifications
+ */
 function AddRequestUserInformationCompleteDelegate(delegate<OnRequestUserInformationComplete> RequestUserInformationDelegate);
 
 /**
-* Clears the delegate used to notify the gameplay code that the user information has been retrieved
-*
-* @param RequestUserInformationDelegate the delegate to use for notifications
-*/
+ * Clears the delegate used to notify the gameplay code that the user information has been retrieved
+ *
+ * @param RequestUserInformationDelegate the delegate to use for notifications
+ */
 function ClearRequestUserInformationCompleteDelegate(delegate<OnRequestUserInformationComplete> RequestUserInformationDelegate);
+
+
+/**
+ * Generates an encrypted ticket, for this user, that could be sent to a 3rd party for service authorization. 
+ * Each platform may have a different re-call governors.
+ *
+ * @param DataToInclude Additional data to be encrypted into the ticket
+ *
+ * @return TRUE if the request fires off, FALSE if it failed
+ */
+function bool RetrieveEncryptedAppTicket(array<byte> DataToInclude);
+
+/**
+ * Delegate is called when the encrypted ticket is returned
+ *
+ * @param bWasSuccessful true if the async action completed without error, false if there was an error
+ * @param EncryptedTicket Contents of the final ticket
+ */
+delegate OnRetrieveEncryptedAppTicketComplete(bool bWasSuccessful, array<byte> EncryptedTicket);
+
+/**
+ * Adds the delegate used to notify script that the encryption has been finished
+ */
+function AddRetrieveEncryptedAppTicketDelegate(delegate<OnRetrieveEncryptedAppTicketComplete> RetrieveEncryptedAppTicketDelegate);
+
+/**
+ * Clears the delegate used to notify script that the encryption has been finished
+ */
+function ClearRetrieveEncryptedAppTicketDelegate(delegate<OnRetrieveEncryptedAppTicketComplete> RetrieveEncryptedAppTicketDelegate);

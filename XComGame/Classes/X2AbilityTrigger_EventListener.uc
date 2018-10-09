@@ -19,6 +19,7 @@ simulated function RegisterListener(XComGameState_Ability AbilityState, Object F
 	
 	`XEVENTMGR.RegisterForEvent(AbilityObj, ListenerData.EventID, ListenerData.EventFn, ListenerData.Deferral, ListenerData.Priority, FilterObj,, AbilityState);
 }
+
 simulated function bool FixupRegisterListener(XComGameState_Ability AbilityState, Object FilterObject)
 {
 	local Object FilterObj, AbilityObj;

@@ -222,11 +222,16 @@ cpptext
 	virtual FOnlineSaveGame* AddSaveGame(BYTE LocalUser,INT DeviceId,const FString& FriendlyName,const FString& FileName);
 	
 	/**
-	* Check the save game header CRC to see if the header is corrupt
-	*
-	* @param FileReader The file reader for the save game.
-	*/
+	 * Check the save game header CRC to see if the header is corrupt
+	 *
+	 * @param FileReader The file reader for the save game.
+	 */
 	virtual UBOOL IsSaveGameHeaderCorrupt(FArchive& FileReader);
+
+	/**
+	 * Steam callback for encrypting a ticket initiated by RetrieveEncryptedAppTicket();
+	 */
+	virtual void OnEncryptedAppTicketResponse(EncryptedAppTicketResponse_t *pEncryptedAppTicketResponse, bool bIOFailure);
 
 private:
 
@@ -4404,14 +4409,24 @@ function SetViewToLeaderboardNameMapping(const out array<ViewIdToLeaderboardName
 // FIRAXIS end -tsmith
 
 /**
-* Sends a request to the subsystem to return the current name for the specified player id.
-*
-* @param LocalUserNum local player index
-* @param PlayerId retrieves the name for this unique player identifier
-*
-* @return TRUE if the request fires off, FALSE if it failed
-*/
+ * Sends a request to the subsystem to return the current name for the specified player id.
+ *
+ * @param LocalUserNum local player index
+ * @param PlayerId retrieves the name for this unique player identifier
+ *
+ * @return TRUE if the request fires off, FALSE if it failed
+ */
 native function bool RequestUserInformation(byte LocalUserNum, UniqueNetId PlayerId);
+
+/**
+ * Generates an encrypted ticket, for this user, that could be sent to a 3rd party for service authorization. 
+ * Each platform may have a different re-call governors. Steam is 60 seconds.
+ *
+ * @param DataToInclude Additional data to be encrypted into the ticket
+ * @return TRUE if the request fires off, FALSE if it failed
+ */
+native function bool RetrieveEncryptedAppTicket(array<byte> DataToInclude);
+
 
 defaultproperties
 {

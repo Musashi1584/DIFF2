@@ -827,6 +827,7 @@ struct native SaveGameHeader
 	var bool bDebugSave;
 	var bool bPreMission;
 	var bool bPostMission;
+	var bool bLadder;
 	var string MissionType;
 };
 

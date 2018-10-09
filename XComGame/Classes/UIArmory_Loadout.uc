@@ -44,6 +44,7 @@ var localized string m_strTooltipStripWeapons;
 var localized string m_strTooltipStripWeaponsDisabled;
 var localized string m_strCannotEdit;
 var localized string m_strMakeAvailable;
+var localized string m_strNeedsLadderUnlock;
 
 var XGParamTag LocTag; // optimization
 var bool bGearStripped;
@@ -785,6 +786,9 @@ simulated function string GetDisabledReason(XComGameState_Item Item, EInventoryS
 	local X2SoldierClassTemplate SoldierClassTemplate, AllowedSoldierClassTemplate;
 	local XComGameState_Unit UpdatedUnit;
 
+	local XComOnlineProfileSettings ProfileSettings;
+	local int BronzeScore, HighScore;
+
 	ItemTemplate = Item.GetMyTemplate();
 	UpdatedUnit = GetUnit();
 
@@ -811,6 +815,20 @@ simulated function string GetDisabledReason(XComGameState_Item Item, EInventoryS
 				DisabledReason = class'UIUtilities_Text'.static.CapsCheckForGermanScharfesS(`XEXPAND.ExpandString(m_strNeedsSoldierClass));
 			}
 		}
+
+		// TLE Weapons are locked out unless ladder 1 is completed to a BronzeMedal
+		if ((DisabledReason == "") && (WeaponTemplate.ClassThatCreatedUs.Name == 'X2Item_TLE_Weapons'))
+		{
+			ProfileSettings = `XPROFILESETTINGS;
+			BronzeScore = class'XComGameState_LadderProgress'.static.GetLadderMedalThreshold( 1, 0 );
+			HighScore = ProfileSettings.Data.GetLadderHighScore( 1 );
+
+			if (BronzeScore > HighScore)
+			{
+				LocTag.StrValue0 = class'XComGameState_LadderProgress'.default.NarrativeLadderNames[ 1 ];
+				DisabledReason = class'UIUtilities_Text'.static.CapsCheckForGermanScharfesS(`XEXPAND.ExpandString(m_strNeedsLadderUnlock));
+			}
+		}
 	}
 
 	ArmorTemplate = X2ArmorTemplate(ItemTemplate);
@@ -833,6 +851,20 @@ simulated function string GetDisabledReason(XComGameState_Item Item, EInventoryS
 			{
 				LocTag.StrValue0 = AllowedSoldierClassTemplate.DisplayName;
 				DisabledReason = class'UIUtilities_Text'.static.CapsCheckForGermanScharfesS(`XEXPAND.ExpandString(m_strNeedsSoldierClass));
+			}
+		}
+
+		// TLE Armor is locked unless ladder 2 is completed to a Bronze Medal
+		if ((DisabledReason == "") && (ArmorTemplate.ClassThatCreatedUs.Name == 'X2Item_TLE_Armor'))
+		{
+			ProfileSettings = `XPROFILESETTINGS;
+			BronzeScore = class'XComGameState_LadderProgress'.static.GetLadderMedalThreshold( 2, 0 );
+			HighScore = ProfileSettings.Data.GetLadderHighScore( 2 );
+
+			if (BronzeScore > HighScore)
+			{
+				LocTag.StrValue0 = class'XComGameState_LadderProgress'.default.NarrativeLadderNames[ 2 ];
+				DisabledReason = class'UIUtilities_Text'.static.CapsCheckForGermanScharfesS(`XEXPAND.ExpandString(m_strNeedsLadderUnlock));
 			}
 		}
 	}
@@ -1089,7 +1121,7 @@ simulated function OnReceiveFocus()
 	if( `ISCONTROLLERACTIVE )
 	{
 		DelayedShowTooltip();
-}
+	}
 
 	super.OnReceiveFocus();
 	Movie.PreventCacheRecycling();

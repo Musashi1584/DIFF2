@@ -981,6 +981,7 @@ static function X2DataTemplate CreateWrathCannonStage2Ability()
 
 	UnitProperty = new class'X2Condition_UnitProperty';
 	UnitProperty.ExcludeImpaired = true;
+	UnitProperty.ImpairedIgnoresImpairingMomentarily = true;
 	Template.AbilityShooterConditions.AddItem(UnitProperty);
 	Template.AbilityShooterConditions.AddItem(default.LivingShooterProperty);
 	Template.AddShooterEffectExclusions();

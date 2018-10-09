@@ -23,7 +23,7 @@ event name CallMeetsConditionWithSource(XComGameState_BaseObject kTarget, XComGa
 	SourceUnit = XComGameState_Unit(kSource);
 	TargetUnit = XComGameState_Unit(kTarget);
 	TargetObject = XComGameState_InteractiveObject(kTarget);
-	
+
 	if (TargetUnit != none && bHaywireProtocol)
 	{
 		//  Only Haywire can target units, they must be alive, unhacked, enemy robotic units

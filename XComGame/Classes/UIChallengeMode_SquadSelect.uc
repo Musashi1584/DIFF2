@@ -1431,7 +1431,7 @@ function RequestFinished(delegate<RequestDelegate> Request)
 		m_CurrentRequestDelegate = m_FiraxisLiveRequestDelegates[0];
 		`log(`location @ "Kicking off next request:" @ `ShowVar(m_CurrentRequestDelegate));
 		m_CurrentRequestDelegate();
-}
+	}
 	else
 	{
 		`log(`location @ "All requests have been processed.");

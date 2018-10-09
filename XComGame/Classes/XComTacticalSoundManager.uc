@@ -368,6 +368,8 @@ function EvaluateTacticalMusicState()
 		//Transition out of combat		
 		SetSwitch( 'TacticalCombatState', 'Explore' );
 
+		// Select the music set when transitioning from combat to explore and not the other way so that it's only set
+		// once per explore-combat cycle and so that explore and combat music pieces that need to match can do so
 		SelectRandomTacticalMusicSet();
 	}
 	else if( NumAlertedEnemiesPrevious == 0 && NumAlertedEnemies > 0 )
@@ -375,7 +377,7 @@ function EvaluateTacticalMusicState()
 		//Transition into combat
 		SetSwitch( 'TacticalCombatState', 'Combat' );
 
-		SelectRandomTacticalMusicSet();
+		// No need to select a random music set here because this is done when starting ambience and when transitioning from combat to explore
 
 		NumCombatEvents++;
 

@@ -41,8 +41,12 @@ static function WeightedTemplateSelection( X2ChallengeSecondaryWeapon Selector, 
 	foreach XComUnits(Unit)
 	{
 		ClassWeapons = GetClassWeapons( Selector, Unit.GetSoldierClassTemplateName() );
-		WeaponName = GetRandomTemplate( ClassWeapons.SecondaryWeapons );
-		ApplyWeapon( WeaponName, Unit, StartState );
+
+		if (ClassWeapons.SecondaryWeapons.Length > 0)
+		{
+			WeaponName = GetRandomTemplate( ClassWeapons.SecondaryWeapons );
+			ApplyWeapon( WeaponName, Unit, StartState );
+		}
 	}
 }
 

@@ -12,7 +12,7 @@ public:
 }
 
 // Called when it is time for this event to fire
-event PreActivate()
+event PreActivateResponse()
 {
 	local XComGameStateHistory History;
 	local XComGameState NewGameState;
@@ -20,7 +20,7 @@ event PreActivate()
 	local EffectAppliedData EffectParams;
 	local XComGameState_Destructible DestructibleState;
 
-	super.PreActivate( );
+	super.PreActivateResponse( );
 
 	if (`XWORLD.bSyncingVisualizer)
 	{

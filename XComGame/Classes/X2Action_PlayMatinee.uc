@@ -354,9 +354,10 @@ protected function PlayMatinee()
 
 simulated protected function EndMatinee()
 {
+	RemoveUnitsFromMatinee();
+
 	if(MatineeCamera != none)
 	{
-		RemoveUnitsFromMatinee();
 		`CAMERASTACK.RemoveCamera(MatineeCamera);		
 
 		MatineeCamera = none;

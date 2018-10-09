@@ -249,6 +249,7 @@ simulated function InitTacticalQuickLaunch()
 	if( Pres != none && !Pres.UIIsBusy() )
 	{
 		Pres.HideLoadingScreen();
+
 		Pres.UITacticalQuickLaunch();
 	}
 	else
@@ -287,6 +288,7 @@ simulated function InitBattle()
 	local XComGameState StartGameState;
 	local XComGameState_BattleData BattleData;
 	local int SecondWaveRandomSeed;
+	local XComGameState_LadderProgress LadderData;
 
 	OnlineEventMgr = `ONLINEEVENTMGR;	
 	m_kProfileSettings = `XPROFILESETTINGS;
@@ -327,13 +329,16 @@ simulated function InitBattle()
 	{
 		StartGameState = History.GetStartState();
 		BattleData = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
+		LadderData = XComGameState_LadderProgress(History.GetSingleGameStateObjectForClass(class'XComGameState_LadderProgress', true));
 
 		class'X2TacticalGameRuleset'.static.ReleaseScriptLog( "TacticalGRI::InitBattle: StartGameState="$StartGameState$", IntendedForReloadLevel="$BattleData.bIntendedForReloadLevel );
 
 		if( (StartGameState != none) && !BattleData.bIntendedForReloadLevel )
 		{
 			`log(self $ "::" $ GetFuncName() @ "XCOMHISTORY=" $ History @ "StartState=" $ StartGameState.ToString(), true, 'XCom_GameStates');
-			if (`ONLINEEVENTMGR.bIsChallengeModeGame)
+			// it's a little weird to start a 'challenge game' for a ladder replay, but replays and challenges are both starting from a constructed start state
+			// that already has units placed, abilities initialized and the like.
+			if (`ONLINEEVENTMGR.bIsChallengeModeGame || ((LadderData != none) && !LadderData.bNewLadder))
 			{
 				TacticalRules.StartChallengeGame();
 			}

@@ -65,6 +65,9 @@ static function ApplyUtilityItem( name ItemTemplateName, EInventorySlot Slot, XC
 	local X2EquipmentTemplate EquipmentTemplate;
 	local XComGameState_Item NewItem;
 
+	if (ItemTemplateName == '')
+		return;
+
 	// Should only be using this to add to these three inventory slots
 	`assert( (Slot == eInvSlot_HeavyWeapon) || (Slot == eInvSlot_Utility) || (Slot == eInvSlot_GrenadePocket) );
 

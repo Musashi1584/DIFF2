@@ -47,6 +47,7 @@ var() bool	ImpairedIgnoresStuns;
 var() bool  IsScampering;
 var() bool  ExcludeDeadFromSpecialDeath;
 var() bool	ExcludeLargeUnits;		//UnitSize=1 only
+var() bool	ImpairedIgnoresImpairingMomentarily;
    
 var() int	MinRank;
 var() int	MaxRank;

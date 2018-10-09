@@ -89,6 +89,7 @@ enum ShuttleToScreenType
 	EOEMSTST_MPMainMenu,
 	EOEMSTST_MPInviteLoadout,
 	EOEMSTST_ChallengeScreen,
+	EOEMSTST_LadderMode,
 };
 var protected ShuttleToScreenType ShuttleToScreen;
 
@@ -262,6 +263,14 @@ function SetShuttleToStartMenu()
 	ScriptTrace();
 	`log(`location @ "SHUTTLE CHECK");
 	ShuttleToScreen = EOEMSTST_StartScreen;
+}
+
+function bool GetShuttleToLadderMenu() { return ShuttleToScreen == EOEMSTST_LadderMode; }
+function SetShuttleToLadderMenu()
+{
+	ScriptTrace();
+	`log(`location @ "SHUTTLE CHECK");
+	ShuttleToScreen = EOEMSTST_LadderMode;
 }
 
 

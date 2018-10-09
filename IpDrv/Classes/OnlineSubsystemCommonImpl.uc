@@ -82,6 +82,9 @@ var array<delegate<OnLoginUIComplete> > LoginUICompleteDelegates;
 /** List of delegates requiring notification when the external asynchronous login UI completes */
 var array<delegate<OnRequestUserInformationComplete> > RequestUserInformationDelegates;
 
+/** The list of delegates to notify when encryption of an app ticket is finialized */
+var array<delegate<OnRetrieveEncryptedAppTicketComplete> > RetrieveEncryptedAppTicketDelegates;
+
 //Firaxis END
 
 /**
@@ -394,5 +397,50 @@ function ClearRequestUserInformationCompleteDelegate(delegate<OnRequestUserInfor
 	if (RemoveIndex != INDEX_NONE)
 	{
 		RequestUserInformationDelegates.Remove(RemoveIndex, 1);
+	}
+}
+
+
+/**
+ * Generates an encrypted ticket, for this user, that could be sent to a 3rd party for service authorization. 
+ * Each platform may have a different re-call governors.
+ *
+ * @param DataToInclude Additional data to be encrypted into the ticket
+ * @return TRUE if the request fires off, FALSE if it failed
+ */
+native function bool RetrieveEncryptedAppTicket(array<byte> DataToInclude);
+
+/**
+ * Delegate is called when the encrypted ticket is returned
+ *
+ * @param bWasSuccessful true if the async action completed without error, false if there was an error
+ * @param EncryptedTicket Contents of the final ticket
+ */
+ delegate OnRetrieveEncryptedAppTicketComplete(bool bWasSuccessful, array<byte> EncryptedTicket);
+
+/**
+ * Adds the delegate used to notify script that the encryption has been finished
+ */
+function AddRetrieveEncryptedAppTicketDelegate(delegate<OnRetrieveEncryptedAppTicketComplete> RetrieveEncryptedAppTicketDelegate)
+{
+	// Only add to the list once
+	if (RetrieveEncryptedAppTicketDelegates.Find(RetrieveEncryptedAppTicketDelegate) == INDEX_NONE)
+	{
+		RetrieveEncryptedAppTicketDelegates.AddItem(RetrieveEncryptedAppTicketDelegate);
+	}
+}
+
+/**
+ * Clears the delegate used to notify script that the encryption has been finished
+ */
+function ClearRetrieveEncryptedAppTicketDelegate(delegate<OnRetrieveEncryptedAppTicketComplete> RetrieveEncryptedAppTicketDelegate)
+{
+	local int RemoveIndex;
+	// Find it in the list
+	RemoveIndex = RetrieveEncryptedAppTicketDelegates.Find(RetrieveEncryptedAppTicketDelegate);
+	// Only remove if found
+	if (RemoveIndex != INDEX_NONE)
+	{
+		RetrieveEncryptedAppTicketDelegates.Remove(RemoveIndex, 1);
 	}
 }

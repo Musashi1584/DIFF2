@@ -51,8 +51,9 @@ delegate OnDropdownSelectionChangedCallback(UIDropdown DropdownControl);
 delegate OnSliderChangedCallback(UISlider SliderControl);
 delegate OnCheckboxChangedCallback(UICheckbox CheckboxControl);
 delegate OnDisabledClickDelegate();
+delegate OnSelectorClickDelegate(UIMechaListItem MechaItem);
 
-simulated function UIMechaListItem InitListItem(optional name InitName, optional int defaultWidth = -1)
+simulated function UIMechaListItem InitListItem(optional name InitName, optional int defaultWidth = -1, optional int textWidth = 250)
 {
 	local UIList List; 	
 
@@ -77,9 +78,9 @@ simulated function UIMechaListItem InitListItem(optional name InitName, optional
 	Desc.bAnimateOnInit = bAnimateOnInit;
 	
 	if(GetLanguage() == "JPN")
-		Desc.InitScrollingText('DescTextControl',,250,5,-2);
+		Desc.InitScrollingText('DescTextControl',, textWidth,5,-2);
 	else
-		Desc.InitScrollingText('DescTextControl', , 250, 5, 3);
+		Desc.InitScrollingText('DescTextControl', , textWidth, 5, 3);
 
 	Spinner = Spawn(class'UIListItemSpinner', self);
 	Spinner.bIsNavigable = false;
@@ -106,8 +107,16 @@ simulated function SetWidgetType(EUILineItemType NewType)
 	}
 
 	// Hide all subcomponents, they'll be shown when data is updated if necessary
-	if(Desc != None) Desc.Hide();
-	if(Value != None) Value.Hide();
+	if (Desc != None)
+	{
+		Desc.SetText(" ");
+		Desc.Hide();
+	}
+	if (Value != None)
+	{
+		Value.SetText(" ");
+		Value.Hide();
+	}
 	if(ColorChip != None) ColorChip.Hide();
 	if(Spinner != None) Spinner.Hide();
 	if(Dropdown != None) Dropdown.Hide();
@@ -148,7 +157,6 @@ simulated function UpdateDataSlider(string _Desc,
 	Slider.Show();
 
 	Desc.SetWidth(width - 350);
-
 	Desc.SetHTMLText(_Desc);
 	Desc.Show();
 
@@ -282,11 +290,12 @@ simulated function OnCommand( string cmd, string arg )
 simulated function UIMechaListItem UpdateDataValue(string _Desc,
 								    String _ValueLabel,
 								    optional delegate<OnClickDelegate> _OnClickDelegate = none,
-									optional bool bForce = false)
+									optional bool bForce = false,
+									optional delegate<OnSelectorClickDelegate> _OnSelectorClickDelegate = none)
 {
 	SetWidgetType(EUILineItemType_Value);
-
-	if( Value == none )
+	
+	if(Value == none)
 	{
 		Value = Spawn(class'UIScrollingText', self);
 		Value.bAnimateOnInit = bAnimateOnInit;
@@ -295,15 +304,15 @@ simulated function UIMechaListItem UpdateDataValue(string _Desc,
 		if(GetLanguage() == "JPN")
 		{
 			Value.InitScrollingText('ValueTextControl',"",250,5,-2);
-	}
+		}
 		else
 		{
 			Value.InitScrollingText('ValueTextControl'," " , 250, 5, 0);
 		}
 	}
-		
+	
 	Value.Show();
-
+	
 	// Force textfield updates so that we can accurately get the textfield size before the getValueTextSize call occurs
 	cachedValue = _ValueLabel;
 
@@ -314,7 +323,7 @@ simulated function UIMechaListItem UpdateDataValue(string _Desc,
 	Desc.SetHTMLText(_Desc, bForce);
 	
 	Desc.Show();
-	
+
 	MC.BeginFunctionOp("setValueTextField");
 	MC.QueueString(cachedValue);
 	MC.EndOp();
@@ -323,6 +332,8 @@ simulated function UIMechaListItem UpdateDataValue(string _Desc,
 	MC.EndOp();
 
 	OnClickDelegate = _OnClickDelegate;
+	OnSelectorClickDelegate = _OnSelectorClickDelegate;
+
 	return self;
 }
 
@@ -353,10 +364,12 @@ simulated function UIMechaListItem UpdateDataColorChip(string _Desc,
 		ColorChip.Hide();
 
 	Desc.SetWidth(width - 170);
+	Desc.SetHTMLText(" ");
 	Desc.SetHTMLText(_Desc);
 	Desc.Show();
 
 	OnClickDelegate = _OnClickDelegate;
+
 	return self;
 }
 
@@ -389,6 +402,7 @@ simulated function UIMechaListItem UpdateDataButton(string _Desc,
 
 	OnClickDelegate = _OnClickDelegate;
 	OnButtonClickedCallback = _OnButtonClicked;
+
 	return self;
 }
 
@@ -428,6 +442,7 @@ simulated function UIMechaListItem UpdateDataSpinner(string _Desc,
 
 	OnClickDelegate = _OnClickDelegate;
 	OnSpinnerChangedCallback = _OnSpinnerChange;
+
 	return self;
 }
 
@@ -476,6 +491,7 @@ simulated function UIMechaListItem UpdateDataSpinnerAndButton(string _Desc,
 	OnClickDelegate = _OnClickDelegate;
 	OnButtonClickedCallback = _OnButtonClicked;
 	OnSpinnerChangedCallback = _OnSpinnerChange;
+
 	return self;
 }
 
@@ -520,6 +536,7 @@ simulated function UIMechaListItem UpdateDataDropdown(string _Desc,
 
 	OnClickDelegate = _OnClickDelegate;
 	Dropdown.OnItemSelectedDelegate = _OnSelectionChange;
+
 	return self;
 }
 
@@ -551,6 +568,7 @@ simulated function UIMechaListItem UpdateDataCheckbox(string _Desc,
 
 	Desc.SetHTMLText(_Desc);
 	Desc.Show();
+
 	return self;
 }
 
@@ -651,6 +669,11 @@ simulated function Click()
 	{
 		Movie.Pres.PlayUISound(eSUISound_MenuSelect);
 		OnClickDelegate();
+		
+	}
+	if (OnSelectorClickDelegate != none && !bDisabled && bIsVisible)
+	{
+		OnSelectorClickDelegate(self);
 	}
 }
 

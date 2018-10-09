@@ -121,7 +121,7 @@ function Activated(TPOV CurrentPOV, X2Camera PreviousActiveCamera, X2Camera_Look
 	// save the original zoom so we can restore it when we deactivate
 	if( LastActiveLookAtCamera != self && `CAMERASTACK.IsCameraInStack(LastActiveLookAtCamera) )
 	{
-	SavedZoom = LastActiveLookAtCamera.TargetZoom;
+		SavedZoom = LastActiveLookAtCamera.TargetZoom;
 	}
 	else
 	{

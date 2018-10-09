@@ -105,8 +105,8 @@ Begin:
 	VisualSwap();
 
 	FinishAnim(ChangeSequence);
-
-	UnitPawn.GetAnimTreeController().SetAllowNewAnimations(false);
+		
+	UnitPawn.GetAnimTreeController().SetAllowNewAnimations(false); 
 	RobotUnit.GetPawn().GetAnimTreeController().SetAllowNewAnimations(true);
 
 	CompleteAction();

@@ -17,6 +17,8 @@ static function array<X2DataTemplate> CreateTemplates()
 	Templates.AddItem(CreateBeamWeapons());
 	Templates.AddItem(CreateRandomMix());
 
+	Templates.AddItem(CreateTLERandomMix());
+
 	return Templates;
 }
 
@@ -169,6 +171,79 @@ static function X2ChallengeSecondaryWeapon CreateRandomMix()
 	Template.SecondaryWeapons[6].SecondaryWeapons.AddItem(CreateEntry('WristBlade_CV', 1));
 	Template.SecondaryWeapons[6].SecondaryWeapons.AddItem(CreateEntry('WristBlade_MG', 1));
 	Template.SecondaryWeapons[6].SecondaryWeapons.AddItem(CreateEntry('WristBlade_BM', 1));
+
+	return Template;
+}
+
+//---------------------------------------------------------------------------------------
+static function X2ChallengeSecondaryWeapon CreateTLERandomMix( )
+{
+	local X2ChallengeSecondaryWeapon	Template;
+
+	`CREATE_X2TEMPLATE(class'X2ChallengeSecondaryWeapon', Template, 'TLESecondaryRandom');
+
+	Template.Weight = 0;
+
+	Template.SecondaryWeapons.Length = 10;
+
+	Template.SecondaryWeapons[ 0 ].SoldierClassName = 'Sharpshooter';
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'Pistol_CV', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'Pistol_MG', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'Pistol_BM', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Pistol_CV', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Pistol_MG', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Pistol_BM', 1 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'ChosenSniperPistol_XCOM', 0 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterPistol_CV', 0 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterPistol_MG', 0 ) );
+	Template.SecondaryWeapons[ 0 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterPistol_BM', 0 ) );
+
+	Template.SecondaryWeapons[ 1 ].SoldierClassName = 'Grenadier';
+	Template.SecondaryWeapons[ 1 ].SecondaryWeapons.AddItem( CreateEntry( 'GrenadeLauncher_CV', 1 ) );
+	Template.SecondaryWeapons[ 1 ].SecondaryWeapons.AddItem( CreateEntry( 'GrenadeLauncher_MG', 1 ) );
+
+	Template.SecondaryWeapons[ 2 ].SoldierClassName = 'Specialist';
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Gremlin_CV', 1 ) );
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Gremlin_MG', 1 ) );
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Gremlin_BM', 1 ) );
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Shen_Gremlin_CV', 0 ) );
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Shen_Gremlin_MG', 0 ) );
+	Template.SecondaryWeapons[ 2 ].SecondaryWeapons.AddItem( CreateEntry( 'Shen_Gremlin_BM', 0 ) );
+
+	Template.SecondaryWeapons[ 3 ].SoldierClassName = 'Ranger';
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'Sword_CV', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'Sword_MG', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'Sword_BM', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Sword_CV', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Sword_MG', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'TLE_Sword_BM', 1 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'ChosenSword_XCOM', 0 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterAxe_CV', 0 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterAxe_MG', 0 ) );
+	Template.SecondaryWeapons[ 3 ].SecondaryWeapons.AddItem( CreateEntry( 'AlienHunterAxe_BM', 0 ) );
+
+	Template.SecondaryWeapons[ 4 ].SoldierClassName = 'PsiOperative';
+	Template.SecondaryWeapons[ 4 ].SecondaryWeapons.AddItem( CreateEntry( 'PsiAmp_CV', 1 ) );
+	Template.SecondaryWeapons[ 4 ].SecondaryWeapons.AddItem( CreateEntry( 'PsiAmp_MG', 1 ) );
+	Template.SecondaryWeapons[ 4 ].SecondaryWeapons.AddItem( CreateEntry( 'PsiAmp_BM', 1 ) );
+
+	Template.SecondaryWeapons[ 5 ].SoldierClassName = 'Templar';
+	Template.SecondaryWeapons[ 5 ].SecondaryWeapons.AddItem( CreateEntry( 'Sidearm_CV', 1 ) );
+	Template.SecondaryWeapons[ 5 ].SecondaryWeapons.AddItem( CreateEntry( 'Sidearm_MG', 1 ) );
+	Template.SecondaryWeapons[ 5 ].SecondaryWeapons.AddItem( CreateEntry( 'Sidearm_BM', 1 ) );
+
+	Template.SecondaryWeapons[ 6 ].SoldierClassName = 'Skirmisher';
+	Template.SecondaryWeapons[ 6 ].SecondaryWeapons.AddItem( CreateEntry( 'WristBlade_CV', 1 ) );
+	Template.SecondaryWeapons[ 6 ].SecondaryWeapons.AddItem( CreateEntry( 'WristBlade_MG', 1 ) );
+	Template.SecondaryWeapons[ 6 ].SecondaryWeapons.AddItem( CreateEntry( 'WristBlade_BM', 1 ) );
+
+	Template.SecondaryWeapons[ 7 ].SoldierClassName = 'Spark';
+	Template.SecondaryWeapons[ 7 ].SecondaryWeapons.AddItem( CreateEntry( 'SparkBit_CV', 1 ) );
+	Template.SecondaryWeapons[ 7 ].SecondaryWeapons.AddItem( CreateEntry( 'SparkBit_MG', 1 ) );
+	Template.SecondaryWeapons[ 7 ].SecondaryWeapons.AddItem( CreateEntry( 'SparkBit_BM', 1 ) );
+
+	Template.SecondaryWeapons[ 8 ].SoldierClassName = 'Reaper';
+	Template.SecondaryWeapons[ 9 ].SoldierClassName = 'Rookie';
 
 	return Template;
 }

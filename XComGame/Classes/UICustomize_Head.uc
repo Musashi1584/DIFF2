@@ -79,18 +79,6 @@ simulated function CreateDataListItems()
 		.UpdateDataValue(CustomizeManager.CheckForAttentionIcon(eUICustomizeCat_Hairstyle)$ m_strHair, CustomizeManager.FormatCategoryDisplay(eUICustomizeCat_Hairstyle, ColorState, FontSize), CustomizeHair)
 		.SetDisabled(bIsSuperSoldier || bIsObstructed, bIsSuperSoldier ? m_strIsSuperSoldier : m_strRemoveHelmet);
 
-	// FACIAL HAIR
-	//-----------------------------------------------------------------------------------------
-	if (CustomizeManager.ShowMaleOnlyOptions())
-	{
-		bIsObstructed = CustomizeManager.IsFacialHairDisabled();
-		ColorState = (bIsSuperSoldier || bIsObstructed) ? eUIState_Disabled : eUIState_Normal;
-
-		GetListItem(i++)
-			.UpdateDataValue(CustomizeManager.CheckForAttentionIcon(eUICustomizeCat_FacialHair)$m_strFacialHair, CustomizeManager.FormatCategoryDisplay(eUICustomizeCat_FacialHair, ColorState, FontSize), CustomizeFacialHair)
-			.SetDisabled(bIsSuperSoldier || bIsObstructed, bIsSuperSoldier ? m_strIsSuperSoldier : m_strRemoveHelmetOrLowerProp);
-	}
-
 	// HAIR COLOR
 	//----------------------------------------------------------------------------------------
 	bIsObstructed = XComHumanPawn(CustomizeManager.ActorPawn).HelmetContent.FallbackHairIndex <= -1 &&
@@ -142,6 +130,18 @@ simulated function CreateDataListItems()
 
 	GetListItem(i++, bIsObstructed, m_strRemoveHelmet).UpdateDataValue(CustomizeManager.CheckForAttentionIcon(eUICustomizeCat_FaceDecorationLower) $ m_strLowerFaceProps,
 		CustomizeManager.FormatCategoryDisplay(eUICustomizeCat_FaceDecorationLower, ColorState, FontSize), CustomizeLowerFaceProps);
+
+	// FACIAL HAIR
+	//-----------------------------------------------------------------------------------------
+	if (CustomizeManager.ShowMaleOnlyOptions())
+	{
+		bIsObstructed = CustomizeManager.IsFacialHairDisabled();
+		ColorState = (bIsSuperSoldier || bIsObstructed) ? eUIState_Disabled : eUIState_Normal;
+
+		GetListItem(i++)
+			.UpdateDataValue(CustomizeManager.CheckForAttentionIcon(eUICustomizeCat_FacialHair)$m_strFacialHair, CustomizeManager.FormatCategoryDisplay(eUICustomizeCat_FacialHair, ColorState, FontSize), CustomizeFacialHair)
+			.SetDisabled(bIsSuperSoldier || bIsObstructed, bIsSuperSoldier ? m_strIsSuperSoldier : m_strRemoveHelmetOrLowerProp);
+	}
 
 	// FACE PAINT
 	//-----------------------------------------------------------------------------------------

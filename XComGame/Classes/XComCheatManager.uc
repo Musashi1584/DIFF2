@@ -95,6 +95,8 @@ struct native CommandSet
 
 var array<CommandSet> CommandSets;
 
+var bool LoadMenuLaddersAllowed;
+
 simulated native function LoadCommandSets();
 
 simulated native function WriteToFilteredLogFile(string WriteString, name ChannelName);
@@ -1423,7 +1425,7 @@ function HelpDESC( string func, string description)
 	OutputMsg(""@func@"-"@description);
 }
 
-function OutputMsg( string msg)
+event OutputMsg( string msg )
 {
     local Console PlayerConsole;
     local LocalPlayer LP;
@@ -3352,6 +3354,114 @@ exec function ChallengeStartAutoSeedGeneration(int StartingSeedNum=1)
 	}
 }
 
+exec native function CreateLadder( int LadderIndex, optional int LadderSize = 7 /*class'XComGameState_LadderProgress'.default.DefaultSize*/, optional int Difficulty = 1 );
+
+exec function CreateLadderStart( int LadderIndex, int MissionIndex, optional int LadderSize = 7 /*class'XComGameState_LadderProgress'.default.DefaultSize*/ )
+{
+	local XComGameStateHistory History;
+	local XComGameState StartState;
+	local XComGameState_ObjectivesList StartObjectives, TrueObjectives;
+	local XComGameState_Unit UnitStart, UnitLatest;
+	local XComGameState_BattleData BattleDataState;
+	local XComGameState_LadderProgress LadderData;
+	local XComGameState_CampaignSettings CampaignSettings;
+
+	History = class'XComGameStateHistory'.static.GetGameStateHistory( );
+
+	StartState = History.GetGameStateFromHistory( History.FindStartStateIndex( ) );
+
+	// copy over the objective strings from the latest non-start state to power the challenge squad select UI
+	foreach History.IterateByClassType( class'XComGameState_ObjectivesList', TrueObjectives )
+	{
+		break;
+	}
+	StartObjectives = XComGameState_ObjectivesList( StartState.GetGameStateForObjectID( TrueObjectives.ObjectID ) );
+	StartObjectives.ObjectiveDisplayInfos = TrueObjectives.ObjectiveDisplayInfos;
+
+	// copy over all the unit positions from the latest to the start state so that Design can move them around after having launched through TQL
+	foreach StartState.IterateByClassType( class'XComGameState_Unit', UnitStart )
+	{
+		UnitLatest = XComGameState_Unit( History.GetGameStateForObjectID( UnitStart.ObjectID ) );
+		UnitStart.SetVisibilityLocation( UnitLatest.TileLocation );
+		UnitStart.bNarrativeLadder = true;
+	}
+
+	History.ObliterateGameStatesFromHistory( History.GetNumGameStates( ) - History.FindStartStateIndex( ) - 1 );
+
+	BattleDataState = XComGameState_BattleData( History.GetSingleGameStateObjectForClass( class'XComGameState_BattleData' ) );
+	BattleDataState.m_strMapCommand = "open" @ BattleDataState.MapData.PlotMapName $ "?game=XComGame.XComTacticalGame";
+
+	LadderData = XComGameState_LadderProgress( History.GetSingleGameStateObjectForClass( class'XComGameState_LadderProgress', true ) );
+	if (LadderData == none)
+	{
+		LadderData = XComGameState_LadderProgress( StartState.CreateNewStateObject( class'XComGameState_LadderProgress' ) );
+	}
+	LadderData.bNewLadder = false;
+	LadderData.LadderIndex = LadderIndex;
+	LadderData.LadderRung = MissionIndex;
+	LadderData.LadderSize = LadderSize;
+	LadderData.SquadProgressionName = "";
+	LadderData.LadderSquadName = class'UITacticalQuickLaunch'.static.GetLastUsedSquad( );
+	LadderData.PopulateFromNarrativeConfig( );
+
+	if (class'XComGameState_LadderProgress'.default.NarrativeLadderNames.Length + 1 > LadderIndex)
+	{
+		LadderData.LadderName = class'XComGameState_LadderProgress'.default.NarrativeLadderNames[ LadderIndex ];
+	}
+	else
+	{
+		LadderData.LadderName = "Missing Ladder " $ LadderIndex $ " Name";
+	}
+
+	class'XComGameState_LadderProgress'.static.SetupMissionSite( StartState, BattleDataState );
+
+	CampaignSettings = XComGameState_CampaignSettings( History.GetSingleGameStateObjectForClass( class'XComGameState_CampaignSettings' ) );
+	CampaignSettings.SetSuppressFirstTimeNarrativeEnabled( true );
+	CampaignSettings.SetTutorialEnabled( false );
+	CampaignSettings.SetIronmanEnabled( true );
+
+	`TACTICALMISSIONMGR.RefreshHackRewards( BattleDataState );
+
+	if (!History.WriteHistoryToFile( "Ladders/", "Mission_" $ LadderIndex $ "_" $ MissionIndex $ "_" $ CampaignSettings.DifficultySetting ))
+	{
+		OutputMsg( "Failed to write Ladder Save Mission_" $ LadderIndex $ "_" $ MissionIndex $ "_" $ CampaignSettings.DifficultySetting );
+	}
+}
+
+native static function string GetCampaignStartTime( );
+
+exec function LoadLadderStart( int LadderIndex, int MissionIndex, int Difficulty = 1 )
+{
+	local XComGameStateHistory History;
+	local XComGameState_BattleData BattleDataState;
+	local XComGameState_CampaignSettings CurrentCampaign;
+
+	History = class'XComGameStateHistory'.static.GetGameStateHistory();
+	History.ReadHistoryFromFile( "Ladders/", "Mission_" $ LadderIndex $ "_" $ MissionIndex $ "_" $ Difficulty );
+
+	CurrentCampaign = XComGameState_CampaignSettings(History.GetSingleGameStateObjectForClass(class'XComGameState_CampaignSettings'));
+	CurrentCampaign.SetStartTime( GetCampaignStartTime( ) );
+	CurrentCampaign.SetGameIndexFromProfile( );
+
+	BattleDataState = XComGameState_BattleData( History.GetSingleGameStateObjectForClass( class'XComGameState_BattleData' ) );
+	ConsoleCommand( BattleDataState.m_strMapCommand );
+}
+
+exec function StartLadder( int LadderIndex, int Difficulty = 1 )
+{
+	LoadLadderStart( LadderIndex, 1, Difficulty );
+}
+
+exec function ResetLadderProgress( )
+{
+	local XComOnlineProfileSettings Profile;
+
+	Profile = `XPROFILESETTINGS;
+	Profile.Data.m_Ladders = 9;
+
+	`ONLINEEVENTMGR.SaveProfileSettings();
+}
+
 // Usage: Open UITacticalQuickLaunch, select appropriate settings, "Start Challenge Mode", wait for load into map, then finally, with the start dialog open, run this command.
 exec function CreateChallengeStart(string LeaderBoardSuffix)
 {
@@ -3416,7 +3526,7 @@ exec function CreateChallengeStart(string LeaderBoardSuffix)
 
 	ChallengeData.LeaderBoardName = BattleDataState.m_strOpName @ LeaderBoardSuffix;
 
-	History.WriteHistoryToFile( "SaveData_Dev/", "ChallengeStartState_" $ LeaderBoardSuffix );
+	History.WriteHistoryToFile( "Challenges/", "ChallengeStartState_" $ LeaderBoardSuffix );
 }
 
 exec function LoadChallengeStart(string LeaderBoardSuffix)
@@ -3427,7 +3537,7 @@ exec function LoadChallengeStart(string LeaderBoardSuffix)
 
 
 	History = class'XComGameStateHistory'.static.GetGameStateHistory();
-	History.ReadHistoryFromFile("SaveData_Dev/", "ChallengeStartState_" $ LeaderBoardSuffix);
+	History.ReadHistoryFromFile("Challenges/", "ChallengeStartState_" $ LeaderBoardSuffix);
 
 	ChallengeModeManager = XComEngine(Class'GameEngine'.static.GetEngine()).ChallengeModeManager;
 	ChallengeModeManager.BootstrapDebugChallenge( );
@@ -3443,7 +3553,7 @@ exec function LoadChallengeReplay(string LeaderBoardSuffix)
 	local XComGameState_BattleData BattleDataState;
 
 	History = class'XComGameStateHistory'.static.GetGameStateHistory();
-	History.ReadHistoryFromFile("SaveData_Dev/", "ChallengeStartState_" $ LeaderBoardSuffix);
+	History.ReadHistoryFromFile("Challenges/", "ChallengeStartState_" $ LeaderBoardSuffix);
 
 	BattleDataState = XComGameState_BattleData(History.GetSingleGameStateObjectForClass(class'XComGameState_BattleData'));
 	`ONLINEEVENTMGR.bInitiateReplayAfterLoad = true;
@@ -3500,7 +3610,7 @@ exec function ResaveChallengeStart(string LeaderBoardSuffix)
 	History = class'XComGameStateHistory'.static.GetGameStateHistory();
 	CharTemplateManager = class'X2CharacterTemplateManager'.static.GetCharacterTemplateManager();
 
-	History.ReadHistoryFromFile("SaveData_Dev/", "ChallengeStartState_" $ LeaderBoardSuffix);
+	History.ReadHistoryFromFile("Challenges/", "ChallengeStartState_" $ LeaderBoardSuffix);
 
 	StartState = History.GetStartState( );
 
@@ -3579,7 +3689,7 @@ exec function ResaveChallengeStart(string LeaderBoardSuffix)
 		}
 	}
 
-	History.WriteHistoryToFile( "SaveData_Dev/", "ChallengeStartState_" $ LeaderBoardSuffix );
+	History.WriteHistoryToFile( "Challenges/", "ChallengeStartState_" $ LeaderBoardSuffix );
 
 	OutputMsg( "Resave of Challenge" @ LeaderBoardSuffix @ "complete." );
 }
@@ -4945,6 +5055,76 @@ exec function ResetMissionSiteEncounterData( )
 	`XCOMGAME.GameRuleset.SubmitGameState(NewGameState);
 }
 
+exec function SetSoundtrack(int SoundtrackNum)
+{
+	switch (SoundtrackNum)
+	{
+	case 0: `SOUNDMGR.SetState('SoundtrackGame', 'XComUFO'); break;
+	case 1: `SOUNDMGR.SetState('SoundtrackGame', 'XCom1'); break;
+	case 2: `SOUNDMGR.SetState('SoundtrackGame', 'XCom2'); break;
+	}
+}
+
+exec function SetCombatMusicSet(name MusicSetName)
+{
+	local XComTacticalSoundManager SoundMgr;
+
+	SoundMgr = `XTACTICALSOUNDMGR;
+	if (SoundMgr != None)
+	{
+		SoundMgr.SetSwitch('TacticalCombatMusicSet', MusicSetName);
+		// Restart music to bypass potentially lengthy music transitions in Wwise
+		SoundMgr.PostAkEvent(SoundMgr.MissionSoundtrackEvent);
+	}
+}
+
+exec function AllowLaddersInLoadMenu( bool allow )
+{
+	LoadMenuLaddersAllowed = allow;
+}
+
+exec function UnlockNarrativeLadders( )
+{
+	local XComOnlineProfileSettings ProfileSettings;
+	local int i, j, BronzeScore;
+	local LadderMissionID ID;
+
+	ProfileSettings = `XPROFILESETTINGS;
+
+	ProfileSettings.Data.HubStats.LadderCompletions.Length = 0;
+
+	for (i = 1; i < 10; ++i)
+	{
+		BronzeScore = class'XComGameState_LadderProgress'.static.GetLadderMedalThreshold( i, 0 );
+		if (BronzeScore >= 0)
+		{
+			ProfileSettings.Data.AddLadderHighScore( i, BronzeScore );
+
+			ID.LadderIndex = i;
+			for (j = 1; j <= 7; ++j)
+			{
+				ID.MissionIndex = j;
+
+				ProfileSettings.Data.HubStats.LadderCompletions.AddItem( ID );
+			}
+		}
+	}
+
+	`ONLINEEVENTMGR.SaveProfileSettings();
+}
+
+exec function ResetNarrativeLadderLocks( )
+{
+	local XComOnlineProfileSettings ProfileSettings;
+
+	ProfileSettings = `XPROFILESETTINGS;
+
+	ProfileSettings.Data.LadderScores.Length = 0;
+	ProfileSettings.Data.HubStats.LadderCompletions.Length = 0;
+
+	`ONLINEEVENTMGR.SaveProfileSettings();
+}
+
 defaultproperties
 {
 	bUseGlamCam = true;
@@ -4967,4 +5147,5 @@ defaultproperties
 	bDebugXp = false;
 	bDebugSoldierRelationships = false;
 	bLightDebugRealtime = true;
+	LoadMenuLaddersAllowed = false;
 }

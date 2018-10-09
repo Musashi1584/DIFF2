@@ -687,7 +687,7 @@ function BuildVisualizationForSpawnerDestruction(XComGameState VisualizeGameStat
 
 
 static function bool InitiateReinforcements(
-	Name EncounterID, 
+	Name EncounterID,
 	optional int OverrideCountdown = -1, 
 	optional bool OverrideTargetLocation,
 	optional const out Vector TargetLocationOverride,
@@ -833,9 +833,9 @@ static function bool LivingUnitCapReached(bool bOnlyConsiderTheLost)
 		{
 			if( !bOnlyConsiderTheLost || kUnitState.GetTeam() == eTeam_TheLost )
 			{
-			++LivingUnitCount;
+				++LivingUnitCount;
+			}
 		}
-	}
 	}
 
 	if( bOnlyConsiderTheLost )

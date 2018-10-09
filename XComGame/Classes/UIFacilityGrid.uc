@@ -613,7 +613,7 @@ simulated function CameraTravelFinished()
 	
 	//CALLING UP, to skip the timer check.
 	if( `SCREENSTACK.IsTopScreen( self ) || `SCREENSTACK.IsInStack(class'UIBuildFacilities') )
-	super.Show();
+		super.Show();
 }
 
 simulated function OnLoseFocus()

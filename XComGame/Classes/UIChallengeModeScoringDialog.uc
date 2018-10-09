@@ -101,6 +101,9 @@ simulated function Remove( )
 function OnContinueButtonPress( UIButton Button )
 {
 	local XComChallengeModeManager ChallengeModeManager;
+
+	Movie.Pres.PlayUISound(eSUISound_MenuSelect);
+
 	`PRES.ScreenStack.PopFirstInstanceOfClass( class'UIChallengeModeScoringDialog' ); 
 	XComTacticalController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).HideInputButtonRelatedHUDElements(false);
 

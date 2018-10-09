@@ -494,6 +494,10 @@ cpptext
 	{
 		return FALSE;
 	}
+
+	virtual void RenderExtraSubtitles() {}
+
+	virtual void ResetCharacterPool() {}		// called by LoadMap under dire, gonna crash circumstances
 }
 
 defaultproperties
